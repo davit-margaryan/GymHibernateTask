@@ -1,0 +1,51 @@
+package com.example.gymhibernatetask.service.impl;
+
+import com.example.gymhibernatetask.dto.CreateRequestDto;
+import com.example.gymhibernatetask.exception.InvalidInputException;
+import com.example.gymhibernatetask.models.User;
+import com.example.gymhibernatetask.repository.UserRepository;
+import com.example.gymhibernatetask.service.UserService;
+import com.example.gymhibernatetask.util.UtilService;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+
+    private final UtilService utilService;
+
+    public UserServiceImpl(UserRepository userRepository, UtilService utilService) {
+        this.userRepository = userRepository;
+        this.utilService = utilService;
+    }
+
+    @Transactional
+    @Override
+    public User createUser(CreateRequestDto createRequestDto) {
+        User user = new User();
+        validateRequest(createRequestDto);
+        String firstName = createRequestDto.getFirstName();
+        String lastName = createRequestDto.getLastName();
+        user.setActive(true);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setUsername(utilService.generateUsername(firstName, lastName, userRepository.findAll()));
+        user.setPassword(utilService.generateRandomPassword(10));
+
+        return userRepository.save(user);
+    }
+
+
+    private void validateRequest(CreateRequestDto createRequestDto) {
+        validateStringInput(createRequestDto.getFirstName(), "First Name");
+        validateStringInput(createRequestDto.getLastName(), "Last Name");
+    }
+
+    private void validateStringInput(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new InvalidInputException(fieldName + " is required and cannot be empty.");
+        }
+    }
+}
