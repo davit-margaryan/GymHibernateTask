@@ -7,10 +7,14 @@ import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.util.UtilService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
 
