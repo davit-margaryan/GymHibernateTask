@@ -52,6 +52,8 @@ public class TrainingServiceImpl implements TrainingService {
         training.setDuration(requestDto.getDuration());
 
         trainingRepository.save(training);
+        logger.info("Training created successfully.");
+
     }
 
     public void validateCreateTrainingRequest(CreateTrainingRequestDto createRequestDto) {

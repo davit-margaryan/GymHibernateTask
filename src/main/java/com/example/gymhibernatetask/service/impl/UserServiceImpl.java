@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
         user.setLastName(lastName);
         user.setUsername(utilService.generateUsername(firstName, lastName, userRepository.findAll()));
         user.setPassword(utilService.generateRandomPassword(10));
+        logger.info("User created successfully.");
 
         return userRepository.save(user);
     }

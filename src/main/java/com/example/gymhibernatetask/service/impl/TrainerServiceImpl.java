@@ -75,11 +75,11 @@ public class TrainerServiceImpl implements TrainerService {
             logger.warn(FAIL);
             throw new AuthenticationException(FAIL);
         }
-        logger.info("Fetching trainee by username: {}", searchUsername);
+        logger.info("Fetching trainer by username: {}", searchUsername);
 
         Trainer trainer = getTrainerByUsername(searchUsername);
 
-        logger.info("Trainee fetched successfully. Username: {}", searchUsername);
+        logger.info("Trainer fetched successfully. Username: {}", searchUsername);
         return trainer;
     }
 
