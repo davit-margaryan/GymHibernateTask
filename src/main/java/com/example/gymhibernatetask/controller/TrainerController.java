@@ -33,7 +33,6 @@ public class TrainerController {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         CreateResponseDto responseDto = trainerService.createTrainer(trainerRequestDto);
-
         transactionLogger.logTransactionSuccess(
                 "Trainer profile fetched successfully", transactionId, responseDto.getUsername());
 
@@ -62,8 +61,8 @@ public class TrainerController {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         TrainerResponseDto updatedTrainer = trainerService.updateTrainer(username, password, updateRequestDto);
-
         transactionLogger.logTransactionSuccess("Trainer profile updated successfully", transactionId, username);
+
         return ResponseEntity.ok(updatedTrainer);
     }
 
@@ -75,12 +74,10 @@ public class TrainerController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodTo,
             @RequestParam(required = false) String traineeName,
             @RequestParam(required = false) TrainingType trainingType) {
-
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         List<TrainingDto> trainerTrainingsList = trainerService.getTrainerTrainingsList(
                 trainerUsername, password, periodFrom, periodTo, traineeName, trainingType);
-
         transactionLogger.logTransactionSuccess("Trainer trainings list fetched successfully", transactionId, trainerUsername);
 
         return ResponseEntity.ok(trainerTrainingsList);
@@ -91,16 +88,13 @@ public class TrainerController {
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam boolean activeStatus) {
-
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         trainerService.changeActiveStatus(username, password, activeStatus);
-
         transactionLogger.logTransactionSuccess(
                 "Trainer profile status changes successfully",
                 transactionId, username);
 
         return ResponseEntity.noContent().build();
     }
-
 }

@@ -31,7 +31,6 @@ public class TrainingTypeController {
         UUID transactionId = transactionLogger.logTransactionRequest("Received request to fetch all training types");
 
         List<TrainingType> trainingTypes = trainingTypeService.getAll();
-
         transactionLogger.logTransactionMessage("All training types fetched successfully", transactionId);
 
         return ResponseEntity.ok(trainingTypes);

@@ -28,8 +28,8 @@ public class LoginController {
 
         loginService.login(username, password);
         transactionLogger.logTransactionSuccess("Login successful", transactionId, username);
-        return ResponseEntity.ok("Login successful");
 
+        return ResponseEntity.ok("Login successful");
     }
 
     @PutMapping("/change-login")
@@ -40,6 +40,7 @@ public class LoginController {
 
         loginService.changeLogin(username, oldPassword, newPassword);
         transactionLogger.logTransactionSuccess("Password changed successfully", transactionId, username);
+
         return ResponseEntity.ok("Password changed successfully");
     }
 }

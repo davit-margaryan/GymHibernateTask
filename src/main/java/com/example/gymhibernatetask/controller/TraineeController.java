@@ -76,7 +76,6 @@ public class TraineeController {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         TraineeResponseDto updatedTrainee = traineeService.updateTrainee(username, password, updateRequestDto);
-
         transactionLogger.logTransactionSuccess(
                 "Trainee profile updated successfully", transactionId, username);
 
@@ -91,12 +90,10 @@ public class TraineeController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodTo,
             @RequestParam(required = false) String trainerFirstName,
             @RequestParam(required = false) TrainingType trainingType) {
-
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         List<TrainingDto> trainingsList = traineeService.getTraineeTrainingsList(
                 traineeUsername, password, periodFrom, periodTo, trainerFirstName, trainingType);
-
         transactionLogger.logTransactionSuccess(
                 "Trainee profile got Trainings list", transactionId, traineeUsername);
 
@@ -108,12 +105,10 @@ public class TraineeController {
             @RequestParam String username,
             @RequestParam String password,
             @PathVariable String traineeUsername) {
-
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         List<TrainerListResponseDto> availableTrainers = traineeService.getAvailableTrainersForTrainee(
                 username, password, traineeUsername);
-
         transactionLogger.logTransactionSuccess(
                 "Trainee profile got Available Trainers successfully",
                 transactionId, username);
@@ -126,12 +121,10 @@ public class TraineeController {
             @RequestParam String username,
             @RequestParam String password,
             @RequestBody List<Trainer> trainers) {
-
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         List<TrainerListResponseDto> updatedTrainers = traineeService
                 .updateTraineeTrainers(username, password, trainers);
-
         transactionLogger.logTransactionSuccess(
                 "Trainee profile updated Trainers successfully",
                 transactionId, username);
@@ -144,11 +137,9 @@ public class TraineeController {
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam boolean activeStatus) {
-
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         traineeService.changeActiveStatus(username, password, activeStatus);
-
         transactionLogger.logTransactionSuccess(
                 "Trainee profile status changes successfully",
                 transactionId, username);
