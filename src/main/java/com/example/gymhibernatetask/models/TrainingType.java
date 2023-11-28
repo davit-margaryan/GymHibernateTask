@@ -1,5 +1,6 @@
 package com.example.gymhibernatetask.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,5 +22,6 @@ public class TrainingType {
     private String trainingTypeName;
 
     @OneToMany(mappedBy = "trainingType")
+    @JsonIgnore
     private List<Training> trainings;
 }

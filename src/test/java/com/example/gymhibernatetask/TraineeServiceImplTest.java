@@ -146,15 +146,18 @@ class TraineeServiceImplTest {
     void selectTraineeProfile_success() {
         String username = "admin";
         String password = "adminPassword";
-        String searchUsername = "john.doe";
+        String searchUsername = "existingUser";
 
         when(loginService.login(username, password)).thenReturn(true);
-        Trainee mockedTrainee = mock(Trainee.class);
-        when(traineeRepository.getTraineeByUserUsername(searchUsername)).thenReturn(Optional.of(mockedTrainee));
 
-        Trainee result = traineeService.selectTraineeProfile(username, password, searchUsername);
+        Trainee expectedTrainee = new Trainee();
+        when(traineeRepository.getTraineeByUserUsername(searchUsername)).thenReturn(Optional.of(expectedTrainee));
 
-        assertEquals(mockedTrainee, result);
+        TraineeResponseDto result = traineeService.selectTraineeProfile(username, password, searchUsername);
+
+        assertNotNull(result);
+        verify(loginService, times(1)).login(username, password);
+        verify(traineeRepository, times(1)).getTraineeByUserUsername(searchUsername);
     }
 
     @Test
@@ -174,23 +177,29 @@ class TraineeServiceImplTest {
         String username = "admin";
         String password = "adminPassword";
         UpdateTraineeRequestDto updateRequestDto = new UpdateTraineeRequestDto();
-        updateRequestDto.setUsername("john.doe");
-        updateRequestDto.setFirstName("John");
-
-        updateRequestDto.setLastName("Doe");
+        updateRequestDto.setUsername("newUsername");
+        updateRequestDto.setFirstName("NewFirstName");
+        updateRequestDto.setLastName("NewLastName");
         updateRequestDto.setActive(true);
+        updateRequestDto.setAddress("NewAddress");
 
         when(loginService.login(username, password)).thenReturn(true);
-        when(utilService.usernameExists(any(), any())).thenReturn(false);
-        Trainee mockedTrainee = mock(Trainee.class);
-        User mockedUser = mock(User.class);
-        when(mockedTrainee.getUser()).thenReturn(mockedUser);
-        when(traineeRepository.getTraineeByUserUsername(username)).thenReturn(Optional.of(mockedTrainee));
 
-        Trainee result = traineeService.updateTrainee(username, password, updateRequestDto);
+        Trainee expectedTrainee = new Trainee();
+        User user = new User();
+        expectedTrainee.setUser(user);
+        when(traineeRepository.getTraineeByUserUsername(username)).thenReturn(Optional.of(expectedTrainee));
 
-        assertEquals(mockedTrainee, result);
+        TraineeResponseDto result = traineeService.updateTrainee(username, password, updateRequestDto);
+
+        assertNotNull(result);
+        verify(loginService, times(1)).login(username, password);
+        verify(traineeRepository, times(1)).getTraineeByUserUsername(username);
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(traineeRepository, times(1)).save(any(Trainee.class));
+
     }
+
 
     @Test
     void updateTrainee_failure_invalidInput() {

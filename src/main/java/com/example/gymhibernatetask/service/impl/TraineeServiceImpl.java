@@ -87,7 +87,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         Optional<Trainee> traineeByUserUsername = traineeRepository.getTraineeByUserUsername(deleteUsername);
         if (traineeByUserUsername.isPresent()) {
-            traineeRepository.deleteTraineeByUserUsername(deleteUsername);
+            userRepository.delete(traineeByUserUsername.get().getUser());
             logger.info("Trainee deleted successfully. Username: {}", deleteUsername);
         } else {
             logger.warn("Trainee not found for deletion. Username: {}", deleteUsername);
@@ -96,7 +96,7 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public Trainee selectTraineeProfile(String username, String password, String searchUsername) {
+    public TraineeResponseDto selectTraineeProfile(String username, String password, String searchUsername) {
         if (!loginService.login(username, password)) {
             logger.warn(FAIL);
             throw new AuthenticationException(FAIL);
@@ -106,12 +106,12 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = getTraineeByUsername(searchUsername);
 
         logger.info("Trainee fetched successfully. Username: {}", searchUsername);
-        return trainee;
+        return convertToTraineeDto(trainee);
     }
 
     @Override
     @Transactional
-    public Trainee updateTrainee(String username, String password, UpdateTraineeRequestDto updateRequestDto) {
+    public TraineeResponseDto updateTrainee(String username, String password, UpdateTraineeRequestDto updateRequestDto) {
         if (!loginService.login(username, password)) {
             logger.warn(FAIL);
             throw new AuthenticationException(FAIL);
@@ -143,7 +143,7 @@ public class TraineeServiceImpl implements TraineeService {
         traineeRepository.save(trainee);
 
         logger.info("Trainee updated successfully. Username: {}", user.getUsername());
-        return trainee;
+        return convertToTraineeDto(trainee);
     }
 
     @Override
@@ -222,13 +222,26 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
 
-    private Trainee getTraineeByUsername(String username) {
+    public Trainee getTraineeByUsername(String username) {
         Optional<Trainee> optionalTrainee = traineeRepository.getTraineeByUserUsername(username);
-
         if (optionalTrainee.isEmpty()) {
-            logger.warn("Trainee not found for update. Username: {}", username);
+            logger.warn("Trainee not found. Username: {}", username);
             throw new NotFoundException("Trainee not found for username: " + username);
         }
         return optionalTrainee.get();
     }
+
+    public TraineeResponseDto convertToTraineeDto(Trainee trainee) {
+        TraineeResponseDto traineeResponseDto = new TraineeResponseDto();
+        if (trainee.getUser() != null) {
+            traineeResponseDto.setFirstName(trainee.getUser().getFirstName());
+            traineeResponseDto.setLastName(trainee.getUser().getLastName());
+            traineeResponseDto.setActive(trainee.getUser().isActive());
+        }
+        traineeResponseDto.setDateOfBirth(trainee.getDateOfBirth());
+        traineeResponseDto.setAddress(trainee.getAddress());
+        traineeResponseDto.setTrainers(trainee.getTrainers());
+        return traineeResponseDto;
+    }
+
 }

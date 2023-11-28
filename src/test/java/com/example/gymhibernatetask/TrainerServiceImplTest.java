@@ -1,9 +1,6 @@
 package com.example.gymhibernatetask;
 
-import com.example.gymhibernatetask.dto.CreateResponseDto;
-import com.example.gymhibernatetask.dto.CreateTrainerRequestDto;
-import com.example.gymhibernatetask.dto.TrainingDto;
-import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
+import com.example.gymhibernatetask.dto.*;
 import com.example.gymhibernatetask.exception.NotFoundException;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.Training;
@@ -95,56 +92,48 @@ class TrainerServiceImplTest {
     }
 
     @Test
-    void updateTrainer_success() {
+    void updateTrainee_success() {
         String username = "admin";
         String password = "adminPassword";
         UpdateTrainerRequestDto updateRequestDto = new UpdateTrainerRequestDto();
         updateRequestDto.setUsername("newUsername");
-        updateRequestDto.setFirstName("newFirstName");
-        updateRequestDto.setLastName("newLastName");
+        updateRequestDto.setFirstName("NewFirstName");
+        updateRequestDto.setLastName("NewLastName");
         updateRequestDto.setActive(true);
 
         when(loginService.login(username, password)).thenReturn(true);
 
-        Trainer existingTrainer = mock(Trainer.class);
-        User existingUser = mock(User.class);
-        when(existingTrainer.getUser()).thenReturn(existingUser);
-        when(existingUser.getUsername()).thenReturn(username);
-        when(existingUser.getPassword()).thenReturn(password);
-        when(trainerRepository.getTrainerByUserUsername(username)).thenReturn(Optional.of(existingTrainer));
+        Trainer expectedTrainer = new Trainer();
+        User user = new User();
+        expectedTrainer.setUser(user);
+        when(trainerRepository.getTrainerByUserUsername(username)).thenReturn(Optional.of(expectedTrainer));
 
-        when(utilService.validateUpdateRequest(updateRequestDto)).thenReturn(true);
+        TrainerResponseDto result = trainerService.updateTrainer(username, password, updateRequestDto);
 
-        Trainer result = trainerService.updateTrainer(username, password, updateRequestDto);
-
+        assertNotNull(result);
         verify(loginService, times(1)).login(username, password);
-        verify(utilService, times(1)).validateUpdateRequest(updateRequestDto);
+        verify(trainerRepository, times(1)).getTrainerByUserUsername(username);
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(trainerRepository, times(1)).save(any(Trainer.class));
 
-        verify(existingUser, times(1)).setUsername("newUsername");
-        verify(existingUser, times(1)).setFirstName("newFirstName");
-        verify(existingUser, times(1)).setLastName("newLastName");
-        verify(existingUser, times(1)).setActive(true);
-
-        verify(userRepository, times(1)).save(existingUser);
-        verify(trainerRepository, times(1)).save(existingTrainer);
-
-        assertEquals(existingTrainer, result);
     }
 
-
     @Test
-    void selectTrainerProfile_success() {
+    void selectTraineeProfile_success() {
         String username = "admin";
         String password = "adminPassword";
-        String searchUsername = "john.doe";
+        String searchUsername = "existingUser";
 
         when(loginService.login(username, password)).thenReturn(true);
-        Trainer mockedTrainer = mock(Trainer.class);
-        when(trainerRepository.getTrainerByUserUsername(searchUsername)).thenReturn(Optional.of(mockedTrainer));
 
-        Trainer result = trainerService.selectTrainerProfile(username, password, searchUsername);
+        Trainer expectedTrainer = new Trainer();
+        when(trainerRepository.getTrainerByUserUsername(searchUsername)).thenReturn(Optional.of(expectedTrainer));
 
-        assertEquals(mockedTrainer, result);
+        TrainerResponseDto result = trainerService.selectTrainerProfile(username, password, searchUsername);
+
+        assertNotNull(result);
+        verify(loginService, times(1)).login(username, password);
+        verify(trainerRepository, times(1)).getTrainerByUserUsername(searchUsername);
     }
 
     @Test

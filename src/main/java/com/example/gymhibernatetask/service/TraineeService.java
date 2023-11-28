@@ -16,9 +16,9 @@ public interface TraineeService {
 
     void deleteTrainee(String username, String password, String deleteUsername);
 
-    Trainee selectTraineeProfile(String username, String password, String searchUsername);
+    TraineeResponseDto selectTraineeProfile(String username, String password, String searchUsername);
 
-    Trainee updateTrainee(String username, String password, UpdateTraineeRequestDto updateRequestDto);
+    TraineeResponseDto updateTrainee(String username, String password, UpdateTraineeRequestDto updateRequestDto);
 
     void changeActiveStatus(String username, String password, boolean activeStatus);
 

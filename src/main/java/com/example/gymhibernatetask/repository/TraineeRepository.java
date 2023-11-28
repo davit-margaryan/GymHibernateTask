@@ -11,5 +11,4 @@ public interface TraineeRepository extends JpaRepository<Trainee, Long> {
 
     Optional<Trainee> getTraineeByUserUsername(String username);
 
-    void deleteTrainers();
 }

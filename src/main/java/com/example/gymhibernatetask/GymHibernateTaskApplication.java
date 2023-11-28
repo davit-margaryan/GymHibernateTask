@@ -9,5 +9,4 @@ public class GymHibernateTaskApplication {
     public static void main(String[] args) {
         SpringApplication.run(GymHibernateTaskApplication.class, args);
     }
-
 }

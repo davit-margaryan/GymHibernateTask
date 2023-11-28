@@ -1,9 +1,6 @@
 package com.example.gymhibernatetask.service.impl;
 
-import com.example.gymhibernatetask.dto.CreateResponseDto;
-import com.example.gymhibernatetask.dto.CreateTrainerRequestDto;
-import com.example.gymhibernatetask.dto.TrainingDto;
-import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
+import com.example.gymhibernatetask.dto.*;
 import com.example.gymhibernatetask.exception.AuthenticationException;
 import com.example.gymhibernatetask.exception.NotFoundException;
 import com.example.gymhibernatetask.models.Trainer;
@@ -70,7 +67,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public Trainer selectTrainerProfile(String username, String password, String searchUsername) {
+    public TrainerResponseDto selectTrainerProfile(String username, String password, String searchUsername) {
         if (!loginService.login(username, password)) {
             logger.warn(FAIL);
             throw new AuthenticationException(FAIL);
@@ -80,12 +77,12 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = getTrainerByUsername(searchUsername);
 
         logger.info("Trainer fetched successfully. Username: {}", searchUsername);
-        return trainer;
+        return convertToTrainerDto(trainer);
     }
 
     @Override
     @Transactional
-    public Trainer updateTrainer(String username, String password, UpdateTrainerRequestDto updateRequestDto) {
+    public TrainerResponseDto updateTrainer(String username, String password, UpdateTrainerRequestDto updateRequestDto) {
         if (!loginService.login(username, password)) {
             logger.warn(FAIL);
             throw new AuthenticationException(FAIL);
@@ -110,7 +107,7 @@ public class TrainerServiceImpl implements TrainerService {
         trainerRepository.save(trainer);
 
         logger.info("Trainer updated successfully. Username: {}", user.getUsername());
-        return trainer;
+        return convertToTrainerDto(trainer);
     }
 
 
@@ -154,5 +151,17 @@ public class TrainerServiceImpl implements TrainerService {
             throw new NotFoundException("Trainer not found for username: " + username);
         }
         return optionalTrainer.get();
+    }
+
+    public TrainerResponseDto convertToTrainerDto(Trainer trainer) {
+        TrainerResponseDto trainerResponseDto = new TrainerResponseDto();
+        if (trainer.getUser() != null) {
+            trainerResponseDto.setFirstName(trainer.getUser().getFirstName());
+            trainerResponseDto.setLastName(trainer.getUser().getLastName());
+            trainerResponseDto.setActive(trainer.getUser().isActive());
+        }
+        trainerResponseDto.setSpecialization(trainer.getSpecialization());
+        trainerResponseDto.setTrainees(trainer.getTrainees());
+        return trainerResponseDto;
     }
 }
