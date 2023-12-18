@@ -1,9 +1,11 @@
 package com.example.gymhibernatetask.util;
 
+import com.example.gymhibernatetask.dto.TraineeListResponseDto;
 import com.example.gymhibernatetask.dto.TrainerListResponseDto;
 import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateRequestDto;
 import com.example.gymhibernatetask.exception.InvalidInputException;
+import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.Training;
 import com.example.gymhibernatetask.models.User;
@@ -69,6 +71,17 @@ public class UtilService {
         trainerDto.setLastName(trainer.getUser().getLastName());
         trainerDto.setSpecialization(trainer.getSpecialization());
         return trainerDto;
+    }
+
+
+    public TraineeListResponseDto convertToTraineeDto(Trainee trainee) {
+        TraineeListResponseDto traineeDto = new TraineeListResponseDto();
+        traineeDto.setUsername(trainee.getUser().getUsername());
+        traineeDto.setFirstName(trainee.getUser().getFirstName());
+        traineeDto.setLastName(trainee.getUser().getLastName());
+        traineeDto.setAddress(trainee.getAddress());
+        traineeDto.setDateOfBirth(trainee.getDateOfBirth());
+        return traineeDto;
     }
 
     public TrainingDto convertToTrainingDto(Training training) {

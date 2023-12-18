@@ -14,6 +14,8 @@ import com.example.gymhibernatetask.service.LoginService;
 import com.example.gymhibernatetask.service.TrainerService;
 import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.util.UtilService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,17 +38,23 @@ public class TrainerServiceImpl implements TrainerService {
     private final UserRepository userRepository;
     private final TrainingRepository trainingRepository;
     private final UtilService utilService;
+    private final Counter updatedTrainersCount;
+
 
     @Autowired
     public TrainerServiceImpl(TrainerRepository trainerRepository, UserService userService,
                               LoginService loginService, UserRepository userRepository,
-                              TrainingRepository trainingRepository, UtilService utilService) {
+                              TrainingRepository trainingRepository, UtilService utilService,
+                              MeterRegistry meterRegistry) {
         this.trainerRepository = trainerRepository;
         this.userService = userService;
         this.loginService = loginService;
         this.userRepository = userRepository;
         this.trainingRepository = trainingRepository;
         this.utilService = utilService;
+        this.updatedTrainersCount = Counter.builder("updated_trainers")
+                .description("Number of successful updated trainers")
+                .register(meterRegistry);
     }
 
     @Transactional
@@ -106,6 +114,7 @@ public class TrainerServiceImpl implements TrainerService {
         userRepository.save(user);
         trainerRepository.save(trainer);
 
+        updatedTrainersCount.increment();
         logger.info("Trainer updated successfully. Username: {}", user.getUsername());
         return convertToTrainerDto(trainer);
     }
@@ -161,7 +170,9 @@ public class TrainerServiceImpl implements TrainerService {
             trainerResponseDto.setActive(trainer.getUser().isActive());
         }
         trainerResponseDto.setSpecialization(trainer.getSpecialization());
-        trainerResponseDto.setTrainees(trainer.getTrainees());
+        trainerResponseDto.setTrainees(trainer.getTrainees().stream()
+                .map(utilService::convertToTraineeDto)
+                .toList());
         return trainerResponseDto;
     }
 }

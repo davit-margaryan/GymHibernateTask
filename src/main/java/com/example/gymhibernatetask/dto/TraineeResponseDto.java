@@ -1,6 +1,5 @@
 package com.example.gymhibernatetask.dto;
 
-import com.example.gymhibernatetask.models.Trainer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,5 +22,5 @@ public class TraineeResponseDto {
 
     private boolean isActive;
 
-    private List<Trainer> trainers;
+    private List<TrainerListResponseDto> trainers;
 }

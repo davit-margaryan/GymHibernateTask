@@ -1,7 +1,6 @@
 package com.example.gymhibernatetask.controller;
 
 import com.example.gymhibernatetask.models.TrainingType;
-import com.example.gymhibernatetask.repository.TrainingTypeRepository;
 import com.example.gymhibernatetask.service.TrainingTypeService;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;

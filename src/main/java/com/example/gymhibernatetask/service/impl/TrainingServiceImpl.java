@@ -11,6 +11,8 @@ import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.service.LoginService;
 import com.example.gymhibernatetask.service.TrainingService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,18 +26,25 @@ import java.util.Optional;
 public class TrainingServiceImpl implements TrainingService {
 
     private final Logger logger = LoggerFactory.getLogger(TrainingServiceImpl.class);
-
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
     private final LoginService loginService;
-
     private final TrainingRepository trainingRepository;
+    private final Counter createdTrainingCount;
 
-    public TrainingServiceImpl(TraineeRepository traineeRepository, TrainerRepository trainerRepository, LoginService loginService, TrainingRepository trainingRepository) {
+
+    public TrainingServiceImpl(TraineeRepository traineeRepository,
+                               TrainerRepository trainerRepository,
+                               LoginService loginService,
+                               TrainingRepository trainingRepository,
+                               MeterRegistry meterRegistry) {
         this.traineeRepository = traineeRepository;
         this.trainerRepository = trainerRepository;
         this.loginService = loginService;
         this.trainingRepository = trainingRepository;
+        this.createdTrainingCount = Counter.builder("created_training")
+                .description("Number of successful created trainings")
+                .register(meterRegistry);
     }
 
     @Transactional
@@ -73,8 +82,8 @@ public class TrainingServiceImpl implements TrainingService {
         training.setDuration(requestDto.getDuration());
 
         trainingRepository.save(training);
+        createdTrainingCount.increment();
         logger.info("Training created successfully.");
-
     }
 
     public void validateCreateTrainingRequest(CreateTrainingRequestDto createRequestDto) {

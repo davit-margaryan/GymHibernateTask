@@ -12,6 +12,8 @@ import com.example.gymhibernatetask.service.LoginService;
 import com.example.gymhibernatetask.service.TraineeService;
 import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.util.UtilService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +37,16 @@ public class TraineeServiceImpl implements TraineeService {
     private final TrainingRepository trainingRepository;
     private final LoginService loginService;
     private final TrainerRepository trainerRepository;
+    private final Counter createdTraineeCount;
 
     @Autowired
     public TraineeServiceImpl(
             TraineeRepository traineeRepository,
             UserService userService,
             UtilService utilService,
-            UserRepository userRepository, TrainingRepository trainingRepository, LoginService loginService, TrainerRepository trainerRepository) {
+            UserRepository userRepository, TrainingRepository trainingRepository,
+            LoginService loginService, TrainerRepository trainerRepository,
+            MeterRegistry meterRegistry) {
         this.traineeRepository = traineeRepository;
         this.userService = userService;
         this.utilService = utilService;
@@ -49,6 +54,9 @@ public class TraineeServiceImpl implements TraineeService {
         this.trainingRepository = trainingRepository;
         this.loginService = loginService;
         this.trainerRepository = trainerRepository;
+        this.createdTraineeCount = Counter.builder("created_trainee")
+                .description("Number of successful created trainees")
+                .register(meterRegistry);
     }
 
     @Override
@@ -63,6 +71,7 @@ public class TraineeServiceImpl implements TraineeService {
         traineeRepository.save(trainee);
 
         logger.info("Trainee created successfully. Username: {}", user.getUsername());
+        createdTraineeCount.increment();
         return new CreateResponseDto(user.getUsername(), user.getPassword());
     }
 
@@ -240,8 +249,10 @@ public class TraineeServiceImpl implements TraineeService {
         }
         traineeResponseDto.setDateOfBirth(trainee.getDateOfBirth());
         traineeResponseDto.setAddress(trainee.getAddress());
-        traineeResponseDto.setTrainers(trainee.getTrainers());
+        List<Trainer> trainers = trainee.getTrainers();
+        traineeResponseDto.setTrainers(trainers.stream()
+                .map(utilService::convertToTrainerDto)
+                .toList());
         return traineeResponseDto;
     }
-
 }

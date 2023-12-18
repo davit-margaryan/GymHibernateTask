@@ -3,6 +3,8 @@ package com.example.gymhibernatetask.service.impl;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.LoginService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -13,11 +15,19 @@ import java.util.Optional;
 public class LoginServiceImpl implements LoginService {
 
     private final Logger logger = LoggerFactory.getLogger(LoginServiceImpl.class);
-
     private final UserRepository userRepository;
+    private final Counter successfulLoginCounter;
+    private final Counter failedLoginCounter;
 
-    public LoginServiceImpl(UserRepository userRepository) {
+    public LoginServiceImpl(UserRepository userRepository, MeterRegistry meterRegistry) {
         this.userRepository = userRepository;
+        this.successfulLoginCounter = Counter.builder("login_successful")
+                .description("Number of successful logins")
+                .register(meterRegistry);
+
+        this.failedLoginCounter = Counter.builder("login_failed")
+                .description("Number of failed logins")
+                .register(meterRegistry);
     }
 
     @Override
@@ -30,8 +40,10 @@ public class LoginServiceImpl implements LoginService {
 
         if (isSuccess) {
             logger.info("Login successful for username: {}", username);
+            successfulLoginCounter.increment();
         } else {
             logger.warn("Login failed for username: {}", username);
+            failedLoginCounter.increment();
         }
 
         return isSuccess;
