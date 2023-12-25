@@ -85,7 +85,7 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = getTrainerByUsername(searchUsername);
 
         logger.info("Trainer fetched successfully. Username: {}", searchUsername);
-        return convertToTrainerDto(trainer);
+        return new TrainerResponseDto(trainer);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         updatedTrainersCount.increment();
         logger.info("Trainer updated successfully. Username: {}", user.getUsername());
-        return convertToTrainerDto(trainer);
+        return new TrainerResponseDto(trainer);
     }
 
 
@@ -148,7 +148,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         logger.info("Trainer trainings fetched successfully. Username: {}", trainerUsername);
 
-        return trainings.stream().map(utilService::convertToTrainingDto).collect(Collectors.toList());
+        return trainings.stream().map(TrainingDto::new).collect(Collectors.toList());
     }
 
 
@@ -162,17 +162,4 @@ public class TrainerServiceImpl implements TrainerService {
         return optionalTrainer.get();
     }
 
-    public TrainerResponseDto convertToTrainerDto(Trainer trainer) {
-        TrainerResponseDto trainerResponseDto = new TrainerResponseDto();
-        if (trainer.getUser() != null) {
-            trainerResponseDto.setFirstName(trainer.getUser().getFirstName());
-            trainerResponseDto.setLastName(trainer.getUser().getLastName());
-            trainerResponseDto.setActive(trainer.getUser().isActive());
-        }
-        trainerResponseDto.setSpecialization(trainer.getSpecialization());
-        trainerResponseDto.setTrainees(trainer.getTrainees().stream()
-                .map(utilService::convertToTraineeDto)
-                .toList());
-        return trainerResponseDto;
-    }
 }

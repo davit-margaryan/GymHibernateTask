@@ -12,5 +12,4 @@ public class CreateResponseDto {
     private String username;
 
     private String password;
-
 }

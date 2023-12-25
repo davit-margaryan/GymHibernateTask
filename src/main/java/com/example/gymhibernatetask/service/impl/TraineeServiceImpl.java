@@ -67,7 +67,8 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = new Trainee();
         User user = userService.createUser(traineeRequestDto);
         trainee.setUser(user);
-        setOptionalFields(trainee, traineeRequestDto);
+        trainee.setDateOfBirth(traineeRequestDto.getDateOfBirth());
+        trainee.setAddress(traineeRequestDto.getAddress());
         traineeRepository.save(trainee);
 
         logger.info("Trainee created successfully. Username: {}", user.getUsername());
@@ -115,7 +116,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = getTraineeByUsername(searchUsername);
 
         logger.info("Trainee fetched successfully. Username: {}", searchUsername);
-        return convertToTraineeDto(trainee);
+        return new TraineeResponseDto(trainee);
     }
 
     @Override
@@ -136,23 +137,14 @@ public class TraineeServiceImpl implements TraineeService {
         user.setLastName(updateRequestDto.getLastName());
         user.setActive(updateRequestDto.isActive());
 
-        if (updateRequestDto.getAddress() != null && !updateRequestDto.getAddress().trim().isEmpty()) {
-            trainee.setAddress(updateRequestDto.getAddress());
-        }
-
-        if (updateRequestDto.getDateOfBirth() != null) {
-            trainee.setDateOfBirth(updateRequestDto.getDateOfBirth());
-        }
-
-        if (updateRequestDto.isActive() != user.isActive()) {
-            user.setActive(updateRequestDto.isActive());
-        }
+        trainee.setAddress(updateRequestDto.getAddress());
+        trainee.setDateOfBirth(updateRequestDto.getDateOfBirth());
 
         userRepository.save(user);
         traineeRepository.save(trainee);
 
         logger.info("Trainee updated successfully. Username: {}", user.getUsername());
-        return convertToTraineeDto(trainee);
+        return new TraineeResponseDto(trainee);
     }
 
     @Override
@@ -181,7 +173,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         traineeRepository.save(trainee);
 
-        return trainee.getTrainers().stream().map(utilService::convertToTrainerDto).collect(Collectors.toList());
+        return trainee.getTrainers().stream().map(TrainerListResponseDto::new).collect(Collectors.toList());
     }
 
     @Override
@@ -200,7 +192,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         logger.info("Trainee trainings fetched successfully. Username: {}", traineeUsername);
 
-        return trainings.stream().map(utilService::convertToTrainingDto).collect(Collectors.toList());
+        return trainings.stream().map(TrainingDto::new).collect(Collectors.toList());
     }
 
 
@@ -216,20 +208,9 @@ public class TraineeServiceImpl implements TraineeService {
 
         return allActiveTrainers.stream()
                 .filter(trainer -> trainee.getTrainers() == null || !trainee.getTrainers().contains(trainer))
-                .map(utilService::convertToTrainerDto)
+                .map(TrainerListResponseDto::new)
                 .collect(Collectors.toList());
     }
-
-    private void setOptionalFields(Trainee trainee, CreateTraineeRequestDto traineeRequestDto) {
-        if (traineeRequestDto.getDateOfBirth() != null) {
-            trainee.setDateOfBirth(traineeRequestDto.getDateOfBirth());
-        }
-
-        if (traineeRequestDto.getAddress() != null && !traineeRequestDto.getAddress().trim().isEmpty()) {
-            trainee.setAddress(traineeRequestDto.getAddress());
-        }
-    }
-
 
     public Trainee getTraineeByUsername(String username) {
         Optional<Trainee> optionalTrainee = traineeRepository.getTraineeByUserUsername(username);
@@ -238,21 +219,5 @@ public class TraineeServiceImpl implements TraineeService {
             throw new NotFoundException("Trainee not found for username: " + username);
         }
         return optionalTrainee.get();
-    }
-
-    public TraineeResponseDto convertToTraineeDto(Trainee trainee) {
-        TraineeResponseDto traineeResponseDto = new TraineeResponseDto();
-        if (trainee.getUser() != null) {
-            traineeResponseDto.setFirstName(trainee.getUser().getFirstName());
-            traineeResponseDto.setLastName(trainee.getUser().getLastName());
-            traineeResponseDto.setActive(trainee.getUser().isActive());
-        }
-        traineeResponseDto.setDateOfBirth(trainee.getDateOfBirth());
-        traineeResponseDto.setAddress(trainee.getAddress());
-        List<Trainer> trainers = trainee.getTrainers();
-        traineeResponseDto.setTrainers(trainers.stream()
-                .map(utilService::convertToTrainerDto)
-                .toList());
-        return traineeResponseDto;
     }
 }

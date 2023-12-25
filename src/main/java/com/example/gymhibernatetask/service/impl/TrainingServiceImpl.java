@@ -92,15 +92,8 @@ public class TrainingServiceImpl implements TrainingService {
             throw new InvalidInputException("Create training request cannot be null");
         }
 
-        validateTrainingName(createRequestDto.getTrainingName());
         validateTrainingDate(createRequestDto.getDate());
         validateTrainingDuration(createRequestDto.getDuration());
-    }
-
-    private void validateTrainingName(String trainingName) {
-        if (trainingName == null || trainingName.trim().isEmpty()) {
-            throw new InvalidInputException("Training name is required.");
-        }
     }
 
     private void validateTrainingDate(Date trainingDate) {

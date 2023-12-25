@@ -1,6 +1,8 @@
 package com.example.gymhibernatetask.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,8 +22,10 @@ public class Trainee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     private Date dateOfBirth;
 
+    @NotBlank
     private String address;
 
     @OneToOne(fetch = FetchType.EAGER)

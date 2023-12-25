@@ -1,5 +1,7 @@
 package com.example.gymhibernatetask.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,8 +15,9 @@ import java.util.Date;
 @NoArgsConstructor
 public class CreateTraineeRequestDto extends CreateRequestDto {
 
+    @NotNull
     private Date dateOfBirth;
 
+    @NotBlank
     private String address;
-
 }

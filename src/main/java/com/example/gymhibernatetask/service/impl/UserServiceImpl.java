@@ -29,7 +29,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(CreateRequestDto createRequestDto) {
         User user = new User();
-        validateRequest(createRequestDto);
         String firstName = createRequestDto.getFirstName();
         String lastName = createRequestDto.getLastName();
         user.setActive(true);
@@ -40,17 +39,5 @@ public class UserServiceImpl implements UserService {
         logger.info("User created successfully.");
 
         return userRepository.save(user);
-    }
-
-
-    private void validateRequest(CreateRequestDto createRequestDto) {
-        validateStringInput(createRequestDto.getFirstName(), "First Name");
-        validateStringInput(createRequestDto.getLastName(), "Last Name");
-    }
-
-    private void validateStringInput(String value, String fieldName) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new InvalidInputException(fieldName + " is required and cannot be empty.");
-        }
     }
 }
