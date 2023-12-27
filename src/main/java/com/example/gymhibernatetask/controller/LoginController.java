@@ -2,7 +2,6 @@ package com.example.gymhibernatetask.controller;
 
 import com.example.gymhibernatetask.service.LoginService;
 import com.example.gymhibernatetask.util.TransactionLogger;
-import io.prometheus.client.Counter;
 import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

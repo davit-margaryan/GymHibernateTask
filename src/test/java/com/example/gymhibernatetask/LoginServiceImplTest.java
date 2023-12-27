@@ -3,6 +3,7 @@ package com.example.gymhibernatetask;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.impl.LoginServiceImpl;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -24,6 +25,9 @@ class LoginServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private MeterRegistry meterRegistry;
 
     @Mock
     private User user;

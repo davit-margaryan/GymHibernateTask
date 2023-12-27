@@ -9,10 +9,10 @@ import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
-import com.example.gymhibernatetask.service.LoginService;
 import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.service.impl.TrainerServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,10 +43,10 @@ class TrainerServiceImplTest {
     private UtilService utilService;
 
     @Mock
-    private LoginService loginService;
+    private UserRepository userRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private MeterRegistry meterRegistry;
 
     @Mock
     private TrainingRepository trainingRepository;
@@ -92,69 +92,32 @@ class TrainerServiceImplTest {
     }
 
     @Test
-    void updateTrainee_success() {
-        String username = "admin";
-        String password = "adminPassword";
-        UpdateTrainerRequestDto updateRequestDto = new UpdateTrainerRequestDto();
-        updateRequestDto.setUsername("newUsername");
-        updateRequestDto.setFirstName("NewFirstName");
-        updateRequestDto.setLastName("NewLastName");
-        updateRequestDto.setActive(true);
-
-        when(loginService.login(username, password)).thenReturn(true);
-
-        Trainer expectedTrainer = new Trainer();
-        User user = new User();
-        expectedTrainer.setUser(user);
-        when(trainerRepository.getTrainerByUserUsername(username)).thenReturn(Optional.of(expectedTrainer));
-
-        TrainerResponseDto result = trainerService.updateTrainer(username, password, updateRequestDto);
-
-        assertNotNull(result);
-        verify(loginService, times(1)).login(username, password);
-        verify(trainerRepository, times(1)).getTrainerByUserUsername(username);
-        verify(userRepository, times(1)).save(any(User.class));
-        verify(trainerRepository, times(1)).save(any(Trainer.class));
-
-    }
-
-    @Test
     void selectTraineeProfile_success() {
-        String username = "admin";
-        String password = "adminPassword";
         String searchUsername = "existingUser";
-
-        when(loginService.login(username, password)).thenReturn(true);
 
         Trainer expectedTrainer = new Trainer();
         when(trainerRepository.getTrainerByUserUsername(searchUsername)).thenReturn(Optional.of(expectedTrainer));
 
-        TrainerResponseDto result = trainerService.selectTrainerProfile(username, password, searchUsername);
+        TrainerResponseDto result = trainerService.selectTrainerProfile(searchUsername);
 
         assertNotNull(result);
-        verify(loginService, times(1)).login(username, password);
         verify(trainerRepository, times(1)).getTrainerByUserUsername(searchUsername);
     }
 
     @Test
     void selectTrainerProfile_failure_notFound() {
-        String username = "admin";
-        String password = "adminPassword";
         String searchUsername = "nonExistentUser";
 
-        when(loginService.login(username, password)).thenReturn(true);
         when(trainerRepository.getTrainerByUserUsername(searchUsername)).thenReturn(Optional.empty());
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> trainerService.selectTrainerProfile(username, password, searchUsername));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> trainerService.selectTrainerProfile(searchUsername));
     }
 
     @Test
     void changeActiveStatus_success() {
         String loggedInUsername = "loggedInUser";
-        String password = "password";
         boolean activeStatus = true;
 
-        when(loginService.login(loggedInUsername, password)).thenReturn(true);
 
         Trainer existingTrainer = mock(Trainer.class);
         User existingUser = mock(User.class);
@@ -163,9 +126,8 @@ class TrainerServiceImplTest {
 
         when(existingTrainer.getUser()).thenReturn(existingUser);
         when(existingUser.getUsername()).thenReturn(loggedInUsername);
-        when(existingUser.getPassword()).thenReturn(password);
 
-        trainerService.changeActiveStatus(loggedInUsername, password, activeStatus);
+        trainerService.changeActiveStatus(loggedInUsername, activeStatus);
 
         verify(existingUser, times(1)).setActive(activeStatus);
         verify(userRepository, times(1)).save(existingUser);
@@ -174,7 +136,6 @@ class TrainerServiceImplTest {
     @Test
     void getTraineeTrainingsList_success() {
         String traineeUsername = "traineeUser";
-        String password = "password";
         Date periodFrom = new Date();
         Date periodTo = new Date();
 
@@ -182,7 +143,6 @@ class TrainerServiceImplTest {
         User user = mock(User.class);
         when(trainer.getUser()).thenReturn(user);
         when(user.getUsername()).thenReturn(traineeUsername);
-        when(loginService.login(traineeUsername, password)).thenReturn(true);
 
         when(trainerRepository.getTrainerByUserUsername(traineeUsername)).thenReturn(Optional.of(trainer));
 
@@ -198,9 +158,8 @@ class TrainerServiceImplTest {
                 .thenReturn(mockTrainings);
 
         List<TrainingDto> result = trainerService.getTrainerTrainingsList(
-                traineeUsername, password, periodFrom, periodTo, user.getFirstName(), trainingType);
+                traineeUsername, periodFrom, periodTo, user.getFirstName(), trainingType);
 
-        verify(loginService, times(1)).login(traineeUsername, password);
         verify(trainerRepository, times(1)).getTrainerByUserUsername(traineeUsername);
         verify(trainingRepository, times(1)).findByTrainerAndCriteria(
                 trainer, periodFrom, periodTo, user.getFirstName(), trainingType.getTrainingTypeName());

@@ -24,7 +24,7 @@ public class TraineeListResponseDto {
 
     private boolean isActive;
 
-    public TraineeListResponseDto (Trainee trainee) {
+    public TraineeListResponseDto(Trainee trainee) {
         this.username = trainee.getUser().getUsername();
         this.firstName = trainee.getUser().getFirstName();
         this.lastName = trainee.getUser().getLastName();

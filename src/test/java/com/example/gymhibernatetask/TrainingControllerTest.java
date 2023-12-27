@@ -28,15 +28,13 @@ class TrainingControllerTest {
 
     @Test
     void testCreateTraining() {
-        String username = "testUser";
-        String password = "testPassword";
         CreateTrainingRequestDto requestDto = mock(CreateTrainingRequestDto.class);
 
-        doNothing().when(trainingService).createTraining(username, password, requestDto);
+        doNothing().when(trainingService).createTraining(requestDto);
 
-        ResponseEntity<Void> response = trainingController.createTraining(username, password, requestDto);
+        ResponseEntity<Void> response = trainingController.createTraining(requestDto);
 
-        verify(trainingService).createTraining(username, password, requestDto);
+        verify(trainingService).createTraining(requestDto);
 
         assert response.getStatusCode() == HttpStatus.CREATED;
     }

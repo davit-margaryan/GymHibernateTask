@@ -29,120 +29,85 @@ public class TraineeController {
     }
 
     @PostMapping
-    public ResponseEntity<CreateResponseDto> createTrainee(
-            @RequestBody CreateTraineeRequestDto traineeRequestDto) {
+    public ResponseEntity<CreateResponseDto> createTrainee(@RequestBody CreateTraineeRequestDto traineeRequestDto) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         CreateResponseDto responseDto = traineeService.createTrainee(traineeRequestDto);
-        transactionLogger.logTransactionSuccess(
-                "Trainee created successfully", transactionId, responseDto.getUsername());
+        transactionLogger.logTransactionSuccess("Trainee created successfully", transactionId, responseDto.getUsername());
 
         return ResponseEntity.status(201).body(responseDto);
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteTrainee(
-            @RequestParam String username,
-            @RequestParam String password,
-            @RequestParam String deleteUsername) {
+    public ResponseEntity<Void> deleteTrainee(@RequestParam String deleteUsername) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        traineeService.deleteTrainee(username, password, deleteUsername);
-        transactionLogger.logTransactionSuccess(
-                "Trainee deleted successfully", transactionId, deleteUsername);
+        traineeService.deleteTrainee(deleteUsername);
+        transactionLogger.logTransactionSuccess("Trainee deleted successfully", transactionId, deleteUsername);
 
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{searchUsername}")
-    public ResponseEntity<TraineeResponseDto> getTraineeProfile(
-            @RequestParam String username,
-            @RequestParam String password,
-            @PathVariable String searchUsername) {
+    public ResponseEntity<TraineeResponseDto> getTraineeProfile(@PathVariable String searchUsername) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        TraineeResponseDto trainee = traineeService.selectTraineeProfile(username, password, searchUsername);
-        transactionLogger.logTransactionSuccess(
-                "Trainee profile fetched successfully", transactionId, searchUsername);
+        TraineeResponseDto trainee = traineeService.selectTraineeProfile(searchUsername);
+        transactionLogger.logTransactionSuccess("Trainee profile fetched successfully", transactionId, searchUsername);
 
         return ResponseEntity.ok(trainee);
     }
 
     @PutMapping
-    public ResponseEntity<TraineeResponseDto> updateTrainee(
-            @RequestParam String username,
-            @RequestParam String password,
-            @RequestBody UpdateTraineeRequestDto updateRequestDto) {
+    public ResponseEntity<TraineeResponseDto> updateTrainee(@RequestParam String username, @RequestBody UpdateTraineeRequestDto updateRequestDto) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        TraineeResponseDto updatedTrainee = traineeService.updateTrainee(username, password, updateRequestDto);
-        transactionLogger.logTransactionSuccess(
-                "Trainee profile updated successfully", transactionId, username);
+        TraineeResponseDto updatedTrainee = traineeService.updateTrainee(username, updateRequestDto);
+        transactionLogger.logTransactionSuccess("Trainee profile updated successfully", transactionId, username);
 
         return ResponseEntity.ok(updatedTrainee);
     }
 
     @GetMapping("/{traineeUsername}/trainings")
-    public ResponseEntity<List<TrainingDto>> getTraineeTrainingsList(
-            @PathVariable String traineeUsername,
-            @RequestParam String password,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodFrom,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodTo,
-            @RequestParam(required = false) String trainerFirstName,
-            @RequestParam(required = false) TrainingType trainingType) {
+    public ResponseEntity<List<TrainingDto>> getTraineeTrainingsList(@PathVariable String traineeUsername,
+                                                                     @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodFrom,
+                                                                     @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodTo,
+                                                                     @RequestParam(required = false) String trainerFirstName,
+                                                                     @RequestParam(required = false) TrainingType trainingType) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        List<TrainingDto> trainingsList = traineeService.getTraineeTrainingsList(
-                traineeUsername, password, periodFrom, periodTo, trainerFirstName, trainingType);
-        transactionLogger.logTransactionSuccess(
-                "Trainee profile got Trainings list", transactionId, traineeUsername);
+        List<TrainingDto> trainingsList = traineeService.getTraineeTrainingsList(traineeUsername, periodFrom, periodTo, trainerFirstName, trainingType);
+        transactionLogger.logTransactionSuccess("Trainee profile got Trainings list", transactionId, traineeUsername);
 
         return ResponseEntity.ok(trainingsList);
     }
 
     @GetMapping("/{traineeUsername}/available-trainers")
-    public ResponseEntity<List<TrainerListResponseDto>> getAvailableTrainersForTrainee(
-            @RequestParam String username,
-            @RequestParam String password,
-            @PathVariable String traineeUsername) {
+    public ResponseEntity<List<TrainerListResponseDto>> getAvailableTrainersForTrainee(@PathVariable String traineeUsername) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        List<TrainerListResponseDto> availableTrainers = traineeService.getAvailableTrainersForTrainee(
-                username, password, traineeUsername);
-        transactionLogger.logTransactionSuccess(
-                "Trainee profile got Available Trainers successfully",
-                transactionId, username);
+        List<TrainerListResponseDto> availableTrainers = traineeService.getAvailableTrainersForTrainee(traineeUsername);
+        transactionLogger.logTransactionSuccess("Trainee profile got Available Trainers successfully", transactionId, traineeUsername);
 
         return ResponseEntity.ok(availableTrainers);
     }
 
     @PutMapping("/update-trainers")
-    public ResponseEntity<List<TrainerListResponseDto>> updateTraineeTrainers(
-            @RequestParam String username,
-            @RequestParam String password,
-            @RequestBody List<Trainer> trainers) {
+    public ResponseEntity<List<TrainerListResponseDto>> updateTraineeTrainers(@RequestParam String username, @RequestBody List<Trainer> trainers) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        List<TrainerListResponseDto> updatedTrainers = traineeService
-                .updateTraineeTrainers(username, password, trainers);
-        transactionLogger.logTransactionSuccess(
-                "Trainee profile updated Trainers successfully",
-                transactionId, username);
+        List<TrainerListResponseDto> updatedTrainers = traineeService.updateTraineeTrainers(username, trainers);
+        transactionLogger.logTransactionSuccess("Trainee profile updated Trainers successfully", transactionId, username);
 
         return ResponseEntity.ok(updatedTrainers);
     }
 
     @PatchMapping("/change-active-status")
-    public ResponseEntity<Void> changeActiveStatus(
-            @RequestParam String username,
-            @RequestParam String password,
-            @RequestParam boolean activeStatus) {
+    public ResponseEntity<Void> changeActiveStatus(@RequestParam String username, @RequestParam boolean activeStatus) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        traineeService.changeActiveStatus(username, password, activeStatus);
-        transactionLogger.logTransactionSuccess(
-                "Trainee profile status changes successfully",
-                transactionId, username);
+        traineeService.changeActiveStatus(username, activeStatus);
+        transactionLogger.logTransactionSuccess("Trainee profile status changes successfully", transactionId, username);
 
         return ResponseEntity.noContent().build();
     }

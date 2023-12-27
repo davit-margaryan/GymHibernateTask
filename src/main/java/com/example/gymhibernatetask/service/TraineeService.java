@@ -1,7 +1,6 @@
 package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.dto.*;
-import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
 
@@ -12,21 +11,19 @@ public interface TraineeService {
 
     CreateResponseDto createTrainee(CreateTraineeRequestDto traineeRequestDto);
 
-    List<Trainee> getAllTrainee(String username, String password);
+    void deleteTrainee(String deleteUsername);
 
-    void deleteTrainee(String username, String password, String deleteUsername);
+    TraineeResponseDto selectTraineeProfile(String searchUsername);
 
-    TraineeResponseDto selectTraineeProfile(String username, String password, String searchUsername);
+    TraineeResponseDto updateTrainee(String username, UpdateTraineeRequestDto updateRequestDto);
 
-    TraineeResponseDto updateTrainee(String username, String password, UpdateTraineeRequestDto updateRequestDto);
+    void changeActiveStatus(String username, boolean activeStatus);
 
-    void changeActiveStatus(String username, String password, boolean activeStatus);
+    public List<TrainerListResponseDto> updateTraineeTrainers(String username, List<Trainer> trainers);
 
-    public List<TrainerListResponseDto> updateTraineeTrainers(String username, String password, List<Trainer> trainers);
-
-    public List<TrainingDto> getTraineeTrainingsList(String traineeUsername, String password,
+    public List<TrainingDto> getTraineeTrainingsList(String traineeUsername,
                                                      Date periodFrom, Date periodTo,
                                                      String trainerName, TrainingType trainingType);
 
-    public List<TrainerListResponseDto> getAvailableTrainersForTrainee(String username, String password, String traineeUsername);
+    public List<TrainerListResponseDto> getAvailableTrainersForTrainee(String traineeUsername);
 }

@@ -1,11 +1,7 @@
 package com.example.gymhibernatetask.util;
 
-import com.example.gymhibernatetask.dto.TraineeListResponseDto;
-import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateRequestDto;
 import com.example.gymhibernatetask.exception.InvalidInputException;
-import com.example.gymhibernatetask.models.Trainee;
-import com.example.gymhibernatetask.models.Training;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.UserRepository;
 import org.slf4j.Logger;

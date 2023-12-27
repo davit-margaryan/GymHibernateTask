@@ -35,8 +35,10 @@ public class TraineeResponseDto {
         this.dateOfBirth = trainee.getDateOfBirth();
         this.address = trainee.getAddress();
         List<Trainer> trainersList = trainee.getTrainers();
-        this.trainers = trainersList.stream()
-                .map(TrainerListResponseDto::new)
-                .toList();
+        if (trainersList != null) {
+            this.trainers = trainersList.stream()
+                    .map(TrainerListResponseDto::new)
+                    .toList();
+        }
     }
 }

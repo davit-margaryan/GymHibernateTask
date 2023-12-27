@@ -22,10 +22,8 @@ public class TrainingController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createTraining(@RequestParam String username,
-                                               @RequestParam String password,
-                                               @RequestBody CreateTrainingRequestDto requestDto) {
-        trainingService.createTraining(username, password, requestDto);
+    public ResponseEntity<Void> createTraining(@RequestBody CreateTrainingRequestDto requestDto) {
+        trainingService.createTraining(requestDto);
 
         logger.info("Training created successfully");
 

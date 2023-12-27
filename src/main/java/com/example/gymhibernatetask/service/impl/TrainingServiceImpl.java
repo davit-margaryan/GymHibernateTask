@@ -28,7 +28,6 @@ public class TrainingServiceImpl implements TrainingService {
     private final Logger logger = LoggerFactory.getLogger(TrainingServiceImpl.class);
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
-    private final LoginService loginService;
     private final TrainingRepository trainingRepository;
     private final Counter createdTrainingCount;
 
@@ -40,7 +39,6 @@ public class TrainingServiceImpl implements TrainingService {
                                MeterRegistry meterRegistry) {
         this.traineeRepository = traineeRepository;
         this.trainerRepository = trainerRepository;
-        this.loginService = loginService;
         this.trainingRepository = trainingRepository;
         this.createdTrainingCount = Counter.builder("created_training")
                 .description("Number of successful created trainings")
@@ -49,11 +47,7 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Transactional
     @Override
-    public void createTraining(String username, String password, CreateTrainingRequestDto requestDto) {
-        if (!loginService.login(username, password)) {
-            logger.warn("Authentication failed");
-            throw new AuthenticationException("Authentication failed");
-        }
+    public void createTraining(CreateTrainingRequestDto requestDto) {
         validateCreateTrainingRequest(requestDto);
         Training training = new Training();
 

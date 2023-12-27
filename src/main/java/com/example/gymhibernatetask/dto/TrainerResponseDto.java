@@ -23,15 +23,17 @@ public class TrainerResponseDto {
 
     private List<TraineeListResponseDto> trainees;
 
-    public TrainerResponseDto (Trainer trainer) {
+    public TrainerResponseDto(Trainer trainer) {
         if (trainer.getUser() != null) {
             this.firstName = trainer.getUser().getFirstName();
             this.lastName = trainer.getUser().getLastName();
             this.isActive = trainer.getUser().isActive();
         }
         this.specialization = trainer.getSpecialization();
-        this.trainees = trainer.getTrainees().stream()
-                .map(TraineeListResponseDto::new)
-                .toList();
+        if (trainer.getTrainees() != null) {
+            this.trainees = trainer.getTrainees().stream()
+                    .map(TraineeListResponseDto::new)
+                    .toList();
+        }
     }
 }

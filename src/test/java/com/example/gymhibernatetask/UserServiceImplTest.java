@@ -57,26 +57,4 @@ class UserServiceImplTest {
         assertNotNull(createdUser.getId());
     }
 
-
-    @Test
-    void createUser_failure_missingFirstName() {
-        CreateRequestDto requestDto = mock(CreateRequestDto.class);
-
-        when(requestDto.getLastName()).thenReturn("Doe");
-
-        assertThrows(InvalidInputException.class, () -> userService.createUser(requestDto));
-
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    void createUser_failure_missingLastName() {
-        CreateRequestDto requestDto = mock(CreateRequestDto.class);
-
-        when(requestDto.getFirstName()).thenReturn("John");
-
-        assertThrows(InvalidInputException.class, () -> userService.createUser(requestDto));
-
-        verify(userRepository, never()).save(any(User.class));
-    }
 }

@@ -1,7 +1,6 @@
 package com.example.gymhibernatetask.service.impl;
 
 import com.example.gymhibernatetask.dto.*;
-import com.example.gymhibernatetask.exception.AuthenticationException;
 import com.example.gymhibernatetask.exception.NotFoundException;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.Training;
@@ -10,7 +9,6 @@ import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
-import com.example.gymhibernatetask.service.LoginService;
 import com.example.gymhibernatetask.service.TrainerService;
 import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.util.UtilService;
@@ -30,11 +28,9 @@ import java.util.stream.Collectors;
 @Service
 public class TrainerServiceImpl implements TrainerService {
 
-    private static final String FAIL = "Authentication failed";
     private final Logger logger = LoggerFactory.getLogger(TrainerServiceImpl.class);
     private final TrainerRepository trainerRepository;
     private final UserService userService;
-    private final LoginService loginService;
     private final UserRepository userRepository;
     private final TrainingRepository trainingRepository;
     private final UtilService utilService;
@@ -42,13 +38,11 @@ public class TrainerServiceImpl implements TrainerService {
 
 
     @Autowired
-    public TrainerServiceImpl(TrainerRepository trainerRepository, UserService userService,
-                              LoginService loginService, UserRepository userRepository,
+    public TrainerServiceImpl(TrainerRepository trainerRepository, UserService userService, UserRepository userRepository,
                               TrainingRepository trainingRepository, UtilService utilService,
                               MeterRegistry meterRegistry) {
         this.trainerRepository = trainerRepository;
         this.userService = userService;
-        this.loginService = loginService;
         this.userRepository = userRepository;
         this.trainingRepository = trainingRepository;
         this.utilService = utilService;
@@ -75,11 +69,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public TrainerResponseDto selectTrainerProfile(String username, String password, String searchUsername) {
-        if (!loginService.login(username, password)) {
-            logger.warn(FAIL);
-            throw new AuthenticationException(FAIL);
-        }
+    public TrainerResponseDto selectTrainerProfile(String searchUsername) {
         logger.info("Fetching trainer by username: {}", searchUsername);
 
         Trainer trainer = getTrainerByUsername(searchUsername);
@@ -90,11 +80,7 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Override
     @Transactional
-    public TrainerResponseDto updateTrainer(String username, String password, UpdateTrainerRequestDto updateRequestDto) {
-        if (!loginService.login(username, password)) {
-            logger.warn(FAIL);
-            throw new AuthenticationException(FAIL);
-        }
+    public TrainerResponseDto updateTrainer(String username, UpdateTrainerRequestDto updateRequestDto) {
         logger.info("Updating trainer with request: {}", updateRequestDto);
 
         utilService.validateUpdateRequest(updateRequestDto);
@@ -121,11 +107,7 @@ public class TrainerServiceImpl implements TrainerService {
 
 
     @Override
-    public void changeActiveStatus(String username, String password, boolean activeStatus) {
-        if (!loginService.login(username, password)) {
-            logger.warn(FAIL);
-            throw new AuthenticationException(FAIL);
-        }
+    public void changeActiveStatus(String username, boolean activeStatus) {
         logger.info("Changing user status: {}", username);
         Trainer trainer = getTrainerByUsername(username);
         User user = trainer.getUser();
@@ -134,12 +116,8 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public List<TrainingDto> getTrainerTrainingsList(String trainerUsername, String password,
+    public List<TrainingDto> getTrainerTrainingsList(String trainerUsername,
                                                      Date periodFrom, Date periodTo, String traineeName, TrainingType trainingType) {
-        if (!loginService.login(trainerUsername, password)) {
-            logger.warn(FAIL);
-            throw new AuthenticationException(FAIL);
-        }
 
         Trainer trainer = getTrainerByUsername(trainerUsername);
 

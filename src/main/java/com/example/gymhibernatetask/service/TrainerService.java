@@ -10,13 +10,13 @@ public interface TrainerService {
 
     CreateResponseDto createTrainer(CreateTrainerRequestDto trainerRequestDto);
 
-    TrainerResponseDto selectTrainerProfile(String username, String password, String searchUsername);
+    TrainerResponseDto selectTrainerProfile(String searchUsername);
 
-    TrainerResponseDto updateTrainer(String username, String password, UpdateTrainerRequestDto updateRequestDto);
+    TrainerResponseDto updateTrainer(String username,UpdateTrainerRequestDto updateRequestDto);
 
-    void changeActiveStatus(String username, String password, boolean activeStatus);
+    void changeActiveStatus(String username,boolean activeStatus);
 
-    List<TrainingDto> getTrainerTrainingsList(String trainerUsername, String password,
+    List<TrainingDto> getTrainerTrainingsList(String trainerUsername,
                                               Date periodFrom, Date periodTo,
                                               String traineeName, TrainingType trainingType);
 }

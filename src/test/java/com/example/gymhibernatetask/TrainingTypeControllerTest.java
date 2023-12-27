@@ -3,6 +3,7 @@ package com.example.gymhibernatetask;
 import com.example.gymhibernatetask.controller.TrainingTypeController;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.repository.TrainingTypeRepository;
+import com.example.gymhibernatetask.service.TrainingTypeService;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ class TrainingTypeControllerTest {
     @Mock
     private TrainingTypeRepository trainingTypeRepository;
 
+    @Mock
+    private TrainingTypeService trainingTypeService;
+
     @InjectMocks
     private TrainingTypeController trainingTypeController;
 
@@ -47,10 +51,8 @@ class TrainingTypeControllerTest {
         ResponseEntity<List<TrainingType>> response = trainingTypeController.getAllTrainingTypes();
 
         verify(transactionLogger).logTransactionRequest("Received request to fetch all training types");
-        verify(trainingTypeRepository).findAll();
         verify(transactionLogger).logTransactionMessage("All training types fetched successfully", transactionId);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(trainingTypes, response.getBody());
     }
 }

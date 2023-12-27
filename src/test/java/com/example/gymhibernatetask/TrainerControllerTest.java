@@ -51,15 +51,13 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerProfile() {
-        String username = "testUser";
-        String password = "testPassword";
         String searchUsername = "searchUser";
 
-        when(trainerService.selectTrainerProfile(username, password, searchUsername)).thenReturn(new TrainerResponseDto());
+        when(trainerService.selectTrainerProfile(searchUsername)).thenReturn(new TrainerResponseDto());
 
-        ResponseEntity<TrainerResponseDto> response = trainerController.getTrainerProfile(username, password, searchUsername);
+        ResponseEntity<TrainerResponseDto> response = trainerController.getTrainerProfile(searchUsername);
 
-        verify(trainerService).selectTrainerProfile(username, password, searchUsername);
+        verify(trainerService).selectTrainerProfile(searchUsername);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -67,14 +65,13 @@ class TrainerControllerTest {
     @Test
     void testUpdateTrainer() {
         String username = "testUser";
-        String password = "testPassword";
         UpdateTrainerRequestDto updateRequestDto = new UpdateTrainerRequestDto();
 
-        when(trainerService.updateTrainer(username, password, updateRequestDto)).thenReturn(new TrainerResponseDto());
+        when(trainerService.updateTrainer(username, updateRequestDto)).thenReturn(new TrainerResponseDto());
 
-        ResponseEntity<TrainerResponseDto> response = trainerController.updateTrainer(username, password, updateRequestDto);
+        ResponseEntity<TrainerResponseDto> response = trainerController.updateTrainer(username, updateRequestDto);
 
-        verify(trainerService).updateTrainer(username, password, updateRequestDto);
+        verify(trainerService).updateTrainer(username, updateRequestDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -82,7 +79,6 @@ class TrainerControllerTest {
     @Test
     void testGetTrainerTrainingsList() {
         String trainerUsername = "testUser";
-        String password = "testPassword";
         Date periodFrom = new Date();
         Date periodTo = new Date();
         String traineeName = "John";
@@ -90,14 +86,14 @@ class TrainerControllerTest {
         trainingType.setTrainingTypeName("Cardio");
 
         List<TrainingDto> trainingsList = List.of();
-        when(trainerService.getTrainerTrainingsList(trainerUsername, password, periodFrom, periodTo, traineeName, trainingType))
+        when(trainerService.getTrainerTrainingsList(trainerUsername, periodFrom, periodTo, traineeName, trainingType))
                 .thenReturn(trainingsList);
 
         ResponseEntity<List<TrainingDto>> response = trainerController.getTrainerTrainingsList(
-                trainerUsername, password, periodFrom, periodTo, traineeName, trainingType);
+                trainerUsername, periodFrom, periodTo, traineeName, trainingType);
 
         verify(trainerService).getTrainerTrainingsList(
-                trainerUsername, password, periodFrom, periodTo, traineeName, trainingType);
+                trainerUsername, periodFrom, periodTo, traineeName, trainingType);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -105,12 +101,11 @@ class TrainerControllerTest {
     @Test
     void testChangeActiveStatus() {
         String username = "testUser";
-        String password = "testPassword";
         boolean activeStatus = true;
 
-        ResponseEntity<Void> response = trainerController.changeActiveStatus(username, password, activeStatus);
+        ResponseEntity<Void> response = trainerController.changeActiveStatus(username,activeStatus);
 
-        verify(trainerService).changeActiveStatus(username, password, activeStatus);
+        verify(trainerService).changeActiveStatus(username, activeStatus);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }

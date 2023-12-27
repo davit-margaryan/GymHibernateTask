@@ -52,28 +52,24 @@ class TraineeControllerTest {
 
     @Test
     void testDeleteTrainee() {
-        String username = "testUser";
-        String password = "testPassword";
         String deleteUsername = "deleteUser";
 
-        ResponseEntity<Void> response = traineeController.deleteTrainee(username, password, deleteUsername);
+        ResponseEntity<Void> response = traineeController.deleteTrainee(deleteUsername);
 
-        verify(traineeService).deleteTrainee(username, password, deleteUsername);
+        verify(traineeService).deleteTrainee(deleteUsername);
 
         assert response.getStatusCode() == HttpStatus.valueOf(204);
     }
 
     @Test
     void testGetTraineeProfile() {
-        String username = "testUser";
-        String password = "testPassword";
         String searchUsername = "searchUser";
 
-        when(traineeService.selectTraineeProfile(username, password, searchUsername)).thenReturn(new TraineeResponseDto());
+        when(traineeService.selectTraineeProfile(searchUsername)).thenReturn(new TraineeResponseDto());
 
-        ResponseEntity<TraineeResponseDto> response = traineeController.getTraineeProfile(username, password, searchUsername);
+        ResponseEntity<TraineeResponseDto> response = traineeController.getTraineeProfile(searchUsername);
 
-        verify(traineeService).selectTraineeProfile(username, password, searchUsername);
+        verify(traineeService).selectTraineeProfile(searchUsername);
 
         assert response.getStatusCode() == HttpStatus.valueOf(200);
     }
@@ -81,14 +77,13 @@ class TraineeControllerTest {
     @Test
     void testUpdateTrainee() {
         String username = "testUser";
-        String password = "testPassword";
         UpdateTraineeRequestDto updateRequestDto = new UpdateTraineeRequestDto();
 
-        when(traineeService.updateTrainee(username, password, updateRequestDto)).thenReturn(new TraineeResponseDto());
+        when(traineeService.updateTrainee(username, updateRequestDto)).thenReturn(new TraineeResponseDto());
 
-        ResponseEntity<TraineeResponseDto> response = traineeController.updateTrainee(username, password, updateRequestDto);
+        ResponseEntity<TraineeResponseDto> response = traineeController.updateTrainee(username, updateRequestDto);
 
-        verify(traineeService).updateTrainee(username, password, updateRequestDto);
+        verify(traineeService).updateTrainee(username, updateRequestDto);
 
         assert response.getStatusCode() == HttpStatus.valueOf(200);
     }
@@ -96,7 +91,6 @@ class TraineeControllerTest {
     @Test
     void testGetTraineeTrainingsList() {
         String traineeUsername = "testUser";
-        String password = "testPassword";
         Date periodFrom = new Date();
         Date periodTo = new Date();
         String trainerFirstName = "John";
@@ -105,32 +99,29 @@ class TraineeControllerTest {
 
 
         List<TrainingDto> trainingsList = new ArrayList<>();
-        when(traineeService.getTraineeTrainingsList(traineeUsername, password, periodFrom, periodTo, trainerFirstName, trainingType))
+        when(traineeService.getTraineeTrainingsList(traineeUsername, periodFrom, periodTo, trainerFirstName, trainingType))
                 .thenReturn(trainingsList);
 
         ResponseEntity<List<TrainingDto>> response = traineeController.getTraineeTrainingsList(
-                traineeUsername, password, periodFrom, periodTo, trainerFirstName, trainingType);
+                traineeUsername, periodFrom, periodTo, trainerFirstName, trainingType);
 
         verify(traineeService).getTraineeTrainingsList(
-                traineeUsername, password, periodFrom, periodTo, trainerFirstName, trainingType);
+                traineeUsername, periodFrom, periodTo, trainerFirstName, trainingType);
 
         assert response.getStatusCode() == HttpStatus.valueOf(200);
     }
 
     @Test
     void testGetAvailableTrainersForTrainee() {
-        String username = "testUser";
-        String password = "testPassword";
         String traineeUsername = "traineeUser";
 
         List<TrainerListResponseDto> availableTrainers = new ArrayList<>();
-        when(traineeService.getAvailableTrainersForTrainee(username, password, traineeUsername))
+        when(traineeService.getAvailableTrainersForTrainee(traineeUsername))
                 .thenReturn(availableTrainers);
 
-        ResponseEntity<List<TrainerListResponseDto>> response = traineeController.getAvailableTrainersForTrainee(
-                username, password, traineeUsername);
+        ResponseEntity<List<TrainerListResponseDto>> response = traineeController.getAvailableTrainersForTrainee(traineeUsername);
 
-        verify(traineeService).getAvailableTrainersForTrainee(username, password, traineeUsername);
+        verify(traineeService).getAvailableTrainersForTrainee(traineeUsername);
 
         assert response.getStatusCode() == HttpStatus.valueOf(200);
     }
@@ -138,17 +129,16 @@ class TraineeControllerTest {
     @Test
     void testUpdateTraineeTrainers() {
         String username = "testUser";
-        String password = "testPassword";
         List<Trainer> trainers = new ArrayList<>();
 
         List<TrainerListResponseDto> updatedTrainers = new ArrayList<>();
-        when(traineeService.updateTraineeTrainers(username, password, trainers))
+        when(traineeService.updateTraineeTrainers(username, trainers))
                 .thenReturn(updatedTrainers);
 
         ResponseEntity<List<TrainerListResponseDto>> response = traineeController.updateTraineeTrainers(
-                username, password, trainers);
+                username, trainers);
 
-        verify(traineeService).updateTraineeTrainers(username, password, trainers);
+        verify(traineeService).updateTraineeTrainers(username, trainers);
 
         assert response.getStatusCode() == HttpStatus.valueOf(200);
     }
@@ -156,12 +146,11 @@ class TraineeControllerTest {
     @Test
     void testChangeActiveStatus() {
         String username = "testUser";
-        String password = "testPassword";
         boolean activeStatus = true;
 
-        ResponseEntity<Void> response = traineeController.changeActiveStatus(username, password, activeStatus);
+        ResponseEntity<Void> response = traineeController.changeActiveStatus(username, activeStatus);
 
-        verify(traineeService).changeActiveStatus(username, password, activeStatus);
+        verify(traineeService).changeActiveStatus(username, activeStatus);
 
         assert response.getStatusCode() == HttpStatus.valueOf(204);
     }

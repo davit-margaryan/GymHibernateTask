@@ -40,13 +40,10 @@ public class TrainerController {
     }
 
     @GetMapping("/{searchUsername}")
-    public ResponseEntity<TrainerResponseDto> getTrainerProfile(
-            @RequestParam String username,
-            @RequestParam String password,
-            @PathVariable String searchUsername) {
+    public ResponseEntity<TrainerResponseDto> getTrainerProfile(@PathVariable String searchUsername) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        TrainerResponseDto trainer = trainerService.selectTrainerProfile(username, password, searchUsername);
+        TrainerResponseDto trainer = trainerService.selectTrainerProfile(searchUsername);
         transactionLogger.logTransactionSuccess(
                 "Trainer profile fetched successfully", transactionId, searchUsername);
 
@@ -56,11 +53,10 @@ public class TrainerController {
     @PutMapping
     public ResponseEntity<TrainerResponseDto> updateTrainer(
             @RequestParam String username,
-            @RequestParam String password,
             @RequestBody UpdateTrainerRequestDto updateRequestDto) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        TrainerResponseDto updatedTrainer = trainerService.updateTrainer(username, password, updateRequestDto);
+        TrainerResponseDto updatedTrainer = trainerService.updateTrainer(username, updateRequestDto);
         transactionLogger.logTransactionSuccess("Trainer profile updated successfully", transactionId, username);
 
         return ResponseEntity.ok(updatedTrainer);
@@ -69,7 +65,6 @@ public class TrainerController {
     @GetMapping("/{trainerUsername}/trainings")
     public ResponseEntity<List<TrainingDto>> getTrainerTrainingsList(
             @PathVariable String trainerUsername,
-            @RequestParam String password,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodFrom,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date periodTo,
             @RequestParam(required = false) String traineeName,
@@ -77,7 +72,7 @@ public class TrainerController {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
         List<TrainingDto> trainerTrainingsList = trainerService.getTrainerTrainingsList(
-                trainerUsername, password, periodFrom, periodTo, traineeName, trainingType);
+                trainerUsername, periodFrom, periodTo, traineeName, trainingType);
         transactionLogger.logTransactionSuccess("Trainer trainings list fetched successfully", transactionId, trainerUsername);
 
         return ResponseEntity.ok(trainerTrainingsList);
@@ -86,11 +81,10 @@ public class TrainerController {
     @PatchMapping("/change-active-status")
     public ResponseEntity<Void> changeActiveStatus(
             @RequestParam String username,
-            @RequestParam String password,
             @RequestParam boolean activeStatus) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
 
-        trainerService.changeActiveStatus(username, password, activeStatus);
+        trainerService.changeActiveStatus(username, activeStatus);
         transactionLogger.logTransactionSuccess(
                 "Trainer profile status changes successfully",
                 transactionId, username);
