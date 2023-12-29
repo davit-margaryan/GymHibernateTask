@@ -46,6 +46,7 @@ public class UtilService {
             password.append(randomChar);
         }
 
+        System.out.println("PASSWORD TO CHECK ENDPOINTS - " + password);
         return password.toString();
     }
 
