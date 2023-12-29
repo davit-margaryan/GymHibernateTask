@@ -1,6 +1,9 @@
 package com.example.gymhibernatetask.service.impl;
 
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TraineeResponseDto;
+import com.example.gymhibernatetask.dto.TrainerListResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
 import com.example.gymhibernatetask.exception.NotFoundException;
 import com.example.gymhibernatetask.models.*;
 import com.example.gymhibernatetask.repository.TraineeRepository;
@@ -8,10 +11,7 @@ import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.TraineeService;
-import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.util.UtilService;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,47 +28,22 @@ public class TraineeServiceImpl implements TraineeService {
 
     private final Logger logger = LoggerFactory.getLogger(TraineeServiceImpl.class);
     private final TraineeRepository traineeRepository;
-    private final UserService userService;
     private final UtilService utilService;
     private final UserRepository userRepository;
     private final TrainingRepository trainingRepository;
     private final TrainerRepository trainerRepository;
-    private final Counter createdTraineeCount;
 
     @Autowired
     public TraineeServiceImpl(
             TraineeRepository traineeRepository,
-            UserService userService,
             UtilService utilService,
             UserRepository userRepository, TrainingRepository trainingRepository,
-            TrainerRepository trainerRepository,
-            MeterRegistry meterRegistry) {
+            TrainerRepository trainerRepository) {
         this.traineeRepository = traineeRepository;
-        this.userService = userService;
         this.utilService = utilService;
         this.userRepository = userRepository;
         this.trainingRepository = trainingRepository;
         this.trainerRepository = trainerRepository;
-        this.createdTraineeCount = Counter.builder("created_trainee")
-                .description("Number of successful created trainees")
-                .register(meterRegistry);
-    }
-
-    @Override
-    @Transactional
-    public CreateResponseDto createTrainee(CreateTraineeRequestDto traineeRequestDto) {
-        logger.info("Creating trainee with request: {}", traineeRequestDto);
-
-        Trainee trainee = new Trainee();
-        User user = userService.createUser(traineeRequestDto);
-        trainee.setUser(user);
-        trainee.setDateOfBirth(traineeRequestDto.getDateOfBirth());
-        trainee.setAddress(traineeRequestDto.getAddress());
-        traineeRepository.save(trainee);
-
-        logger.info("Trainee created successfully. Username: {}", user.getUsername());
-        createdTraineeCount.increment();
-        return new CreateResponseDto(user.getUsername(), user.getPassword());
     }
 
     @Override

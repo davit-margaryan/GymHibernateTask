@@ -1,6 +1,8 @@
 package com.example.gymhibernatetask.service.impl;
 
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TrainerResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.exception.NotFoundException;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.Training;
@@ -10,7 +12,6 @@ import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.TrainerService;
-import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.util.UtilService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -30,7 +31,6 @@ public class TrainerServiceImpl implements TrainerService {
 
     private final Logger logger = LoggerFactory.getLogger(TrainerServiceImpl.class);
     private final TrainerRepository trainerRepository;
-    private final UserService userService;
     private final UserRepository userRepository;
     private final TrainingRepository trainingRepository;
     private final UtilService utilService;
@@ -38,34 +38,16 @@ public class TrainerServiceImpl implements TrainerService {
 
 
     @Autowired
-    public TrainerServiceImpl(TrainerRepository trainerRepository, UserService userService, UserRepository userRepository,
+    public TrainerServiceImpl(TrainerRepository trainerRepository, UserRepository userRepository,
                               TrainingRepository trainingRepository, UtilService utilService,
                               MeterRegistry meterRegistry) {
         this.trainerRepository = trainerRepository;
-        this.userService = userService;
         this.userRepository = userRepository;
         this.trainingRepository = trainingRepository;
         this.utilService = utilService;
         this.updatedTrainersCount = Counter.builder("updated_trainers")
                 .description("Number of successful updated trainers")
                 .register(meterRegistry);
-    }
-
-    @Transactional
-    @Override
-    public CreateResponseDto createTrainer(CreateTrainerRequestDto trainerRequestDto) {
-        logger.info("Creating trainer with request: {}", trainerRequestDto);
-
-        Trainer trainer = new Trainer();
-        User user = userService.createUser(trainerRequestDto);
-        trainer.setUser(user);
-        if (trainerRequestDto.getSpecialization() != null) {
-            trainer.setSpecialization(trainerRequestDto.getSpecialization());
-        }
-
-        trainerRepository.save(trainer);
-        logger.info("Trainer created successfully. Username: {}", user.getUsername());
-        return new CreateResponseDto(user.getUsername(), user.getPassword());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.gymhibernatetask;
 
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TrainerResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.exception.NotFoundException;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.Training;
@@ -13,7 +14,6 @@ import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.service.impl.TrainerServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -28,7 +28,6 @@ import java.util.Optional;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class TrainerServiceImplTest {
@@ -57,38 +56,6 @@ class TrainerServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    void createTrainer_successful() {
-        CreateTrainerRequestDto requestDto = mock(CreateTrainerRequestDto.class);
-        User mockedUser = mock(User.class);
-        Trainer mockedTrainer = mock(Trainer.class);
-        CreateResponseDto mockedResponseDto = mock(CreateResponseDto.class);
-
-        when(userService.createUser(requestDto)).thenReturn(mockedUser);
-        when(utilService.generateRandomPassword(10)).thenReturn("randomPassword");
-        when(trainerRepository.save(any(Trainer.class))).thenReturn(mockedTrainer);
-        when(mockedUser.getUsername()).thenReturn("john.doe");
-        when(mockedUser.getPassword()).thenReturn("randomPassword");
-        when(mockedResponseDto.getUsername()).thenReturn("john.doe");
-        when(mockedResponseDto.getPassword()).thenReturn("randomPassword");
-
-        CreateResponseDto responseDto = trainerService.createTrainer(requestDto);
-
-        verify(trainerRepository, times(1)).save(any(Trainer.class));
-        verify(userService, times(1)).createUser(requestDto);
-        assertEquals(mockedResponseDto.getPassword(), responseDto.getPassword());
-        assertEquals(mockedResponseDto.getUsername(), responseDto.getUsername());
-    }
-
-    @Test
-    void createTrainer_failure() {
-        CreateTrainerRequestDto requestDto = mock(CreateTrainerRequestDto.class);
-
-        when(userService.createUser(requestDto)).thenThrow(new RuntimeException("User creation failed"));
-
-        Assertions.assertThrows(RuntimeException.class, () -> trainerService.createTrainer(requestDto));
     }
 
     @Test

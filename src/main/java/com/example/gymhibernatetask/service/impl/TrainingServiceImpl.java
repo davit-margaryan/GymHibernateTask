@@ -1,7 +1,6 @@
 package com.example.gymhibernatetask.service.impl;
 
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
-import com.example.gymhibernatetask.exception.AuthenticationException;
 import com.example.gymhibernatetask.exception.InvalidInputException;
 import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
@@ -9,7 +8,6 @@ import com.example.gymhibernatetask.models.Training;
 import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
-import com.example.gymhibernatetask.service.LoginService;
 import com.example.gymhibernatetask.service.TrainingService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -34,7 +32,6 @@ public class TrainingServiceImpl implements TrainingService {
 
     public TrainingServiceImpl(TraineeRepository traineeRepository,
                                TrainerRepository trainerRepository,
-                               LoginService loginService,
                                TrainingRepository trainingRepository,
                                MeterRegistry meterRegistry) {
         this.traineeRepository = traineeRepository;

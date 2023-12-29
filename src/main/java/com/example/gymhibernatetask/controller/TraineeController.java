@@ -1,6 +1,9 @@
 package com.example.gymhibernatetask.controller;
 
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TraineeResponseDto;
+import com.example.gymhibernatetask.dto.TrainerListResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TraineeService;
@@ -26,16 +29,6 @@ public class TraineeController {
     public TraineeController(TransactionLogger transactionLogger, TraineeService traineeService) {
         this.transactionLogger = transactionLogger;
         this.traineeService = traineeService;
-    }
-
-    @PostMapping
-    public ResponseEntity<CreateResponseDto> createTrainee(@RequestBody CreateTraineeRequestDto traineeRequestDto) {
-        UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
-
-        CreateResponseDto responseDto = traineeService.createTrainee(traineeRequestDto);
-        transactionLogger.logTransactionSuccess("Trainee created successfully", transactionId, responseDto.getUsername());
-
-        return ResponseEntity.status(201).body(responseDto);
     }
 
     @DeleteMapping

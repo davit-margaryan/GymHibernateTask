@@ -1,7 +1,10 @@
 package com.example.gymhibernatetask;
 
 import com.example.gymhibernatetask.controller.TraineeController;
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TraineeResponseDto;
+import com.example.gymhibernatetask.dto.TrainerListResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TraineeService;
@@ -37,18 +40,6 @@ class TraineeControllerTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test
-    void testCreateTrainee() {
-        CreateTraineeRequestDto traineeRequestDto = new CreateTraineeRequestDto();
-
-        when(traineeService.createTrainee(traineeRequestDto)).thenReturn(new CreateResponseDto());
-
-        ResponseEntity<CreateResponseDto> response = traineeController.createTrainee(traineeRequestDto);
-
-        verify(traineeService).createTrainee(traineeRequestDto);
-
-        assert response.getStatusCode() == HttpStatus.valueOf(201);
-    }
 
     @Test
     void testDeleteTrainee() {

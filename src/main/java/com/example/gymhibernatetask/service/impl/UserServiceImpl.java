@@ -8,6 +8,7 @@ import com.example.gymhibernatetask.util.UtilService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,10 +18,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     private final UtilService utilService;
 
-    public UserServiceImpl(UserRepository userRepository, UtilService utilService) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilService utilService) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         this.utilService = utilService;
     }
 
@@ -34,7 +38,7 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setUsername(utilService.generateUsername(firstName, lastName, userRepository.findAll()));
-        user.setPassword(utilService.generateRandomPassword(10));
+        user.setPassword(passwordEncoder.encode(utilService.generateRandomPassword(10)));
         logger.info("User created successfully.");
 
         return userRepository.save(user);

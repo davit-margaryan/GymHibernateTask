@@ -1,7 +1,6 @@
 package com.example.gymhibernatetask;
 
 import com.example.gymhibernatetask.dto.CreateRequestDto;
-import com.example.gymhibernatetask.exception.InvalidInputException;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.impl.UserServiceImpl;

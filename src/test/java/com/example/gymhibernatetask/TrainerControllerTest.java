@@ -1,7 +1,9 @@
 package com.example.gymhibernatetask;
 
 import com.example.gymhibernatetask.controller.TrainerController;
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TrainerResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TrainerService;
 import com.example.gymhibernatetask.util.TransactionLogger;
@@ -34,19 +36,6 @@ class TrainerControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    void testCreateTrainer() {
-        CreateTrainerRequestDto trainerRequestDto = new CreateTrainerRequestDto();
-
-        when(trainerService.createTrainer(trainerRequestDto)).thenReturn(new CreateResponseDto());
-
-        ResponseEntity<CreateResponseDto> response = trainerController.createTrainer(trainerRequestDto);
-
-        verify(trainerService).createTrainer(trainerRequestDto);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     @Test
@@ -103,7 +92,7 @@ class TrainerControllerTest {
         String username = "testUser";
         boolean activeStatus = true;
 
-        ResponseEntity<Void> response = trainerController.changeActiveStatus(username,activeStatus);
+        ResponseEntity<Void> response = trainerController.changeActiveStatus(username, activeStatus);
 
         verify(trainerService).changeActiveStatus(username, activeStatus);
 

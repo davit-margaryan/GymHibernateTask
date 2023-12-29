@@ -1,12 +1,13 @@
 package com.example.gymhibernatetask.controller;
 
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TrainerResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TrainerService;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,17 +27,6 @@ public class TrainerController {
     public TrainerController(TransactionLogger transactionLogger, TrainerService trainerService) {
         this.transactionLogger = transactionLogger;
         this.trainerService = trainerService;
-    }
-
-    @PostMapping
-    public ResponseEntity<CreateResponseDto> createTrainer(@RequestBody CreateTrainerRequestDto trainerRequestDto) {
-        UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
-
-        CreateResponseDto responseDto = trainerService.createTrainer(trainerRequestDto);
-        transactionLogger.logTransactionSuccess(
-                "Trainer profile fetched successfully", transactionId, responseDto.getUsername());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/{searchUsername}")

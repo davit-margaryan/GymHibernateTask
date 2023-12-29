@@ -1,6 +1,9 @@
 package com.example.gymhibernatetask;
 
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TraineeResponseDto;
+import com.example.gymhibernatetask.dto.TrainerListResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
 import com.example.gymhibernatetask.exception.NotFoundException;
 import com.example.gymhibernatetask.models.*;
 import com.example.gymhibernatetask.repository.TraineeRepository;
@@ -11,7 +14,6 @@ import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.service.impl.TraineeServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -57,16 +59,6 @@ class TraineeServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-    }
-
-
-    @Test
-    void createTrainee_failure() {
-        CreateTraineeRequestDto requestDto = mock(CreateTraineeRequestDto.class);
-
-        when(userService.createUser(requestDto)).thenThrow(new RuntimeException("User creation failed"));
-
-        Assertions.assertThrows(RuntimeException.class, () -> traineeService.createTrainee(requestDto));
     }
 
     @Test
