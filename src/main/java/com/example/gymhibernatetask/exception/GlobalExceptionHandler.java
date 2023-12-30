@@ -6,6 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.security.auth.login.AccountLockedException;
+
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -33,5 +35,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException exc) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exc.getMessage());
+    }
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<String> handleAccountLockedException(AccountLockedException exc) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(exc.getMessage());
     }
 }

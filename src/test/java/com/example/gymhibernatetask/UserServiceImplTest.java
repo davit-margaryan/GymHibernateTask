@@ -3,6 +3,7 @@ package com.example.gymhibernatetask;
 import com.example.gymhibernatetask.dto.CreateRequestDto;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.UserRepository;
+import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.service.impl.UserServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,9 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceImplTest {
 
@@ -20,40 +27,48 @@ class UserServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private UtilService utilService;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    UserServiceImpl userServiceImpl;
+
+    private CreateRequestDto createRequestDto;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        createRequestDto = new CreateRequestDto();
+        createRequestDto.setFirstName("John");
+        createRequestDto.setLastName("Doe");
     }
 
     @Test
     void testCreateUser() {
-        CreateRequestDto requestDto = mock(CreateRequestDto.class);
-        User mockedUser = mock(User.class);
+        User savedUser = new User();
+        savedUser.setFirstName("John");
+        savedUser.setLastName("Doe");
+        savedUser.setActive(true);
 
-        when(requestDto.getFirstName()).thenReturn("John");
-        when(requestDto.getLastName()).thenReturn("Doe");
-        when(utilService.generateRandomPassword(10)).thenReturn("randomPassword");
-        when(utilService.generateUsername(anyString(), anyString(), anyList())).thenReturn("john.doe");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User savedUser = invocation.getArgument(0);
-            savedUser.setId(1L);
-            return savedUser;
-        });
+        when(utilService.generateUsername(anyString(), anyString(), any())).thenReturn("johndoe");
+        when(utilService.generateRandomPassword(anyInt())).thenReturn("randompassword");
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedpassword");
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userRepository.findAll()).thenReturn(new ArrayList<>());
 
-        User createdUser = userService.createUser(requestDto);
+        User result = userServiceImpl.createUser(createRequestDto);
 
-        verify(userRepository, times(1)).save(any(User.class));
-        assertEquals("john.doe", createdUser.getUsername());
-        assertEquals("randomPassword", createdUser.getPassword());
-        assertTrue(createdUser.isActive());
-        assertEquals("John", createdUser.getFirstName());
-        assertEquals("Doe", createdUser.getLastName());
-        assertNotNull(createdUser.getId());
+        verify(utilService).generateUsername(anyString(), anyString(), any());
+        verify(utilService).generateRandomPassword(anyInt());
+        verify(passwordEncoder).encode(anyString());
+        verify(userRepository).save(any(User.class));
+        verify(userRepository).findAll();
+
+        assertNotNull(result);
+        assertEquals("John", result.getFirstName());
+        assertEquals("Doe", result.getLastName());
+        assertTrue(result.isActive());
     }
-
 }

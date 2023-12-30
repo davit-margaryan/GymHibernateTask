@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +34,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.AccountLockedException;
 import java.io.IOException;
 
 @Service
@@ -49,12 +51,14 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final MeterRegistry meterRegistry;
     private final PasswordEncoder passwordEncoder;
+    private final UserAttemptService userAttemptService;
+
 
 
     private Counter counter;
 
     @PostConstruct
-    private void init() {
+    public void init() {
         counter = meterRegistry.counter("successful.login.counter");
     }
 
@@ -92,26 +96,44 @@ public class AuthenticationService {
         return authenticateUserAfterRegister(user);
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
-        var user = repository.getByUsername(request.getUsername())
-                .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
-        counter.increment();
-        return AuthenticationResponse.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
+    public AuthenticationResponse authenticate(AuthenticationRequest request) throws AccountLockedException {
+        String username = request.getUsername();
 
+        if (userAttemptService.isBlocked(username)) {
+            logger.warn("User account is blocked due to too many failed login attempts: {}", username);
+
+            throw new AccountLockedException(username);
+        }
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+
+            userAttemptService.loginSucceeded(username);
+
+            var user = repository.getByUsername(request.getUsername()).orElseThrow();
+            var jwtToken = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(user);
+            revokeAllUserTokens(user);
+            saveUserToken(user, jwtToken);
+            counter.increment();
+
+            logger.info("User logged in successfully: {}", username);
+
+            return AuthenticationResponse.builder()
+                    .accessToken(jwtToken)
+                    .refreshToken(refreshToken)
+                    .build();
+        } catch (BadCredentialsException ex) {
+            userAttemptService.loginFailed(username);
+            logger.warn("Invalid login attempt: {}", username);
+            throw ex;
+        }
+    }
     @Transactional
     public void changePassword(ChangePasswordRequest dto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
