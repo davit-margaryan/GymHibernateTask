@@ -1,8 +1,9 @@
 package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
 
 public interface TrainingService {
 
-    void createTraining(CreateTrainingRequestDto requestDto);
+    TrainerWorkload createTraining(CreateTrainingRequestDto requestDto);
 }

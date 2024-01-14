@@ -9,6 +9,7 @@ import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.service.TrainingService;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
@@ -44,13 +45,13 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Transactional
     @Override
-    public void createTraining(CreateTrainingRequestDto requestDto) {
+    public TrainerWorkload createTraining(CreateTrainingRequestDto requestDto) {
         validateCreateTrainingRequest(requestDto);
         Training training = new Training();
 
         Optional<Trainee> traineeByUserUsername = traineeRepository.getTraineeByUserUsername(requestDto.getTraineeUsername());
         Optional<Trainer> trainerByUserUsername = trainerRepository.getTrainerByUserUsername(requestDto.getTrainerUsername());
-        if (trainerByUserUsername.isEmpty() && traineeByUserUsername.isEmpty()) {
+        if (trainerByUserUsername.isEmpty() || traineeByUserUsername.isEmpty()) {
             throw new InvalidInputException("Trainee or Trainer does not exists ");
         }
         Trainee trainee = traineeByUserUsername.get();
@@ -75,6 +76,16 @@ public class TrainingServiceImpl implements TrainingService {
         trainingRepository.save(training);
         createdTrainingCount.increment();
         logger.info("Training created successfully.");
+
+        TrainerWorkload trainerWorkload = new TrainerWorkload();
+        trainerWorkload.setTrainingDate(requestDto.getDate());
+        trainerWorkload.setActive(true);
+        trainerWorkload.setActionType("ADD");
+        trainerWorkload.setUsername(requestDto.getTrainerUsername());
+        trainerWorkload.setFirstName(trainer.getUser().getFirstName());
+        trainerWorkload.setLastName(trainer.getUser().getLastName());
+
+        return trainerWorkload;
     }
 
     public void validateCreateTrainingRequest(CreateTrainingRequestDto createRequestDto) {

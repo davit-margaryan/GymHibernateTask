@@ -5,6 +5,7 @@ import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TrainerService;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,10 +24,12 @@ public class TrainerController {
     private static final String TRANSACTION_INFO = "Received request to fetch trainee profile";
     private final TransactionLogger transactionLogger;
     private final TrainerService trainerService;
+    private final TrainerWorkloadClient workloadClient;
 
-    public TrainerController(TransactionLogger transactionLogger, TrainerService trainerService) {
+    public TrainerController(TransactionLogger transactionLogger, TrainerService trainerService, TrainerWorkloadClient workloadClient) {
         this.transactionLogger = transactionLogger;
         this.trainerService = trainerService;
+        this.workloadClient = workloadClient;
     }
 
     @GetMapping("/{searchUsername}")

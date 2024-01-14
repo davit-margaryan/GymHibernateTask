@@ -1,0 +1,22 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: report-microservice # Name of the microservice to register with Eureka. Replace with your actual service name
+  datasource:
+    url: jdbc:h2:mem:reportdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/ # Replace with the actual Eureka server URL
+    register-with-eureka: true # If this property is true, it will automatically register to eureka upon startup
+    fetch-registry: true # If this property is true, it will automatically fetch eureka registry upon startup
+

@@ -2,6 +2,12 @@ server:
   port: 8083
 
 spring:
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+  application:
+    name: main-microservice
   main:
     allow-bean-definition-overriding: true
   datasource:
@@ -32,3 +38,15 @@ application:
       expiration: 86400000
       refresh-token:
         expiration: 604800000
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/ # Replace with the actual Eureka server URL. Make sure it's the same one specified in the secondary microservice's configuration
+    register-with-eureka: true
+    fetch-registry: true
+
+report-microservice:
+  url: http://localhost:8087
+
+
