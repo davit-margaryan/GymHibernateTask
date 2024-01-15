@@ -17,7 +17,7 @@ public class TrainerWorkloadFallback implements TrainerWorkloadClient {
 
     @Override
     public ResponseEntity<TrainerSummary> getTrainerSummary(String username, String correlationId) {
-        LOG.warn("Falling back for manageTrainerWorkload due to failure of the report-microservice. CorrelationId: {}", correlationId);
+        LOG.warn("Falling back for getTrainerSummary due to failure of the report-microservice. CorrelationId: {}", correlationId);
         throw new RuntimeException("The service fails");
     }
 }

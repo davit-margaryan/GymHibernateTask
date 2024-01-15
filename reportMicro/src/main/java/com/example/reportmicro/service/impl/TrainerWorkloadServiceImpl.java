@@ -61,7 +61,7 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
             calendar.setTime(trainerWorkload.getDate());
 
             int year = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH) + 1; // Months are zero-based
+            int month = calendar.get(Calendar.MONTH) + 1;
 
             String yearMonthKey = year + "-" + month;
             int duration = 0;
