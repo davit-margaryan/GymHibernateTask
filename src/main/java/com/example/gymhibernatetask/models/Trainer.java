@@ -21,7 +21,7 @@ public class Trainer {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToMany(mappedBy = "trainers")
+    @ManyToMany(mappedBy = "trainers", cascade = CascadeType.ALL)
     private List<Trainee> trainees;
 
 

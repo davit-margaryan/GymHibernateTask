@@ -5,9 +5,13 @@ import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TrainerService;
+import com.example.gymhibernatetask.trainerWorkload.TrainerSummary;
 import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +26,16 @@ import java.util.UUID;
 public class TrainerController {
 
     private static final String TRANSACTION_INFO = "Received request to fetch trainee profile";
+
+    private final Logger logger = LoggerFactory.getLogger(TrainingController.class);
+
     private final TransactionLogger transactionLogger;
     private final TrainerService trainerService;
     private final TrainerWorkloadClient workloadClient;
 
-    public TrainerController(TransactionLogger transactionLogger, TrainerService trainerService, TrainerWorkloadClient workloadClient) {
+    public TrainerController(TransactionLogger transactionLogger,
+                             TrainerService trainerService,
+                             @Qualifier("com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient") TrainerWorkloadClient workloadClient) {
         this.transactionLogger = transactionLogger;
         this.trainerService = trainerService;
         this.workloadClient = workloadClient;
@@ -83,5 +92,17 @@ public class TrainerController {
                 transactionId, username);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/summary/{username}")
+    public ResponseEntity<TrainerSummary> getTrainerSummary(@PathVariable String username) {
+        UUID correlationId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
+
+        ResponseEntity<TrainerSummary> trainerSummary = workloadClient
+                .getTrainerSummary(username, String.valueOf(correlationId));
+
+        logger.info("CorrelationId {}: Trainer summery calculated successfully", correlationId);
+
+        return trainerSummary;
     }
 }

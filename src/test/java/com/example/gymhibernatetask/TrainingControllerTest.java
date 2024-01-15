@@ -3,39 +3,41 @@ package com.example.gymhibernatetask;
 import com.example.gymhibernatetask.controller.TrainingController;
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
 import com.example.gymhibernatetask.service.TrainingService;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
-class TrainingControllerTest {
+public class TrainingControllerTest {
 
     @Mock
     private TrainingService trainingService;
-
-    @InjectMocks
+    @Mock
+    private TrainerWorkloadClient trainerWorkloadClient;
     private TrainingController trainingController;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.initMocks(this);
+        trainingController = new TrainingController(trainingService, trainerWorkloadClient);
     }
 
     @Test
     void testCreateTraining() {
-        CreateTrainingRequestDto requestDto = mock(CreateTrainingRequestDto.class);
+        TrainerWorkload trainerWorkload = new TrainerWorkload();
+        CreateTrainingRequestDto requestDto = new CreateTrainingRequestDto();
 
-        doNothing().when(trainingService).createTraining(requestDto);
+        when(trainingService.createTraining(Mockito.any())).thenReturn(trainerWorkload);
+        ResponseEntity<Void> responseEntity = trainingController.createTraining(requestDto);
 
-        ResponseEntity<Void> response = trainingController.createTraining(requestDto);
-
-        verify(trainingService).createTraining(requestDto);
-
-        assert response.getStatusCode() == HttpStatus.CREATED;
+        Assertions.assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
     }
 }

@@ -1,13 +1,12 @@
 -- Insert three User records
 INSERT INTO User (first_name, last_name, username, password, is_active)
-VALUES
-    ('Trainee', 'User1', 'trainee1', 'password1', true),
-    ('Trainee', 'User2', 'trainee2', 'password2', true),
-    ('Trainee', 'User3', 'trainee3', 'password3', true),
-    ('Trainer', 'User1', 'trainer1', 'password1', true),
-    ('Trainer', 'User2', 'trainer2', 'password2', true),
-    ('Trainer', 'User3', 'trainer3', 'password3', true),
-    ('Davo', 'Davo', 'admin', '$2a$10$Sit1CmXANuZUxmUk3WdAY.9dJqJVuU9uB1zJZ7Kb/1uc1HET8YTAi', true);
+VALUES ('Trainee', 'User1', 'trainee1', 'password1', true),
+       ('Trainee', 'User2', 'trainee2', 'password2', true),
+       ('Trainee', 'User3', 'trainee3', 'password3', true),
+       ('Trainer', 'User1', 'trainer1', 'password1', true),
+       ('Trainer', 'User2', 'trainer2', 'password2', true),
+       ('Trainer', 'User3', 'trainer3', 'password3', true),
+       ('Davo', 'Davo', 'admin', '$2a$10$Sit1CmXANuZUxmUk3WdAY.9dJqJVuU9uB1zJZ7Kb/1uc1HET8YTAi', true);
 
 -- Insert three Trainee records
 INSERT INTO Trainee (date_of_birth, address, user_id)

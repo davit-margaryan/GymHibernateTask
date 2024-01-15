@@ -8,6 +8,7 @@ import io.swagger.annotations.Api;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +27,8 @@ public class TrainingController {
     private final TrainingService trainingService;
     private final TrainerWorkloadClient workloadClient;
 
-    public TrainingController(TrainingService trainingService, TrainerWorkloadClient workloadClient) {
+    public TrainingController(TrainingService trainingService,
+                              @Qualifier("com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient") TrainerWorkloadClient workloadClient) {
         this.trainingService = trainingService;
         this.workloadClient = workloadClient;
     }

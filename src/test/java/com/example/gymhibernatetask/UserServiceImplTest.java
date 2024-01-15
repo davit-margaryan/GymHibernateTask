@@ -3,7 +3,6 @@ package com.example.gymhibernatetask;
 import com.example.gymhibernatetask.dto.CreateRequestDto;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.UserRepository;
-import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.service.impl.UserServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,30 +10,25 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceImplTest {
 
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private UtilService utilService;
-
     @InjectMocks
     UserServiceImpl userServiceImpl;
-
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private UtilService utilService;
     private CreateRequestDto createRequestDto;
 
     @BeforeEach

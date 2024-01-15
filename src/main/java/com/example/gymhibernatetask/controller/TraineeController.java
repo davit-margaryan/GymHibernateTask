@@ -4,17 +4,26 @@ import com.example.gymhibernatetask.dto.TraineeResponseDto;
 import com.example.gymhibernatetask.dto.TrainerListResponseDto;
 import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
+import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
+import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.service.TraineeService;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -25,16 +34,37 @@ public class TraineeController {
     private static final String TRANSACTION_INFO = "Received request to fetch trainee profile";
     private final TransactionLogger transactionLogger;
     private final TraineeService traineeService;
+    private final TraineeRepository traineeRepository;
+    private final TrainerWorkloadClient workloadClient;
 
-    public TraineeController(TransactionLogger transactionLogger, TraineeService traineeService) {
+    public TraineeController(TransactionLogger transactionLogger,
+                             TraineeService traineeService,
+                             TraineeRepository traineeRepository,
+                             @Qualifier("com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient") TrainerWorkloadClient workloadClient) {
         this.transactionLogger = transactionLogger;
         this.traineeService = traineeService;
+        this.traineeRepository = traineeRepository;
+        this.workloadClient = workloadClient;
     }
 
     @DeleteMapping
+    @Transactional
     public ResponseEntity<Void> deleteTrainee(@RequestParam String deleteUsername) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
-
+        Optional<Trainee> traineeByUserUsername = traineeRepository.getTraineeByUserUsername(deleteUsername);
+        if (traineeByUserUsername.isEmpty()) {
+            throw new RuntimeException("Trainee not found");
+        }
+        List<Trainer> trainers = traineeByUserUsername.get().getTrainers();
+        if (trainers != null) {
+            for (Trainer trainer : trainers) {
+                System.out.println(trainer.getUser().getUsername());
+                TrainerWorkload trainerWorkload = new TrainerWorkload();
+                trainerWorkload.setUsername(trainer.getUser().getUsername());
+                trainerWorkload.setActionType("DELETE");
+                workloadClient.manageTrainerWorkload(trainerWorkload, String.valueOf(transactionId));
+            }
+        }
         traineeService.deleteTrainee(deleteUsername);
         transactionLogger.logTransactionSuccess("Trainee deleted successfully", transactionId, deleteUsername);
 

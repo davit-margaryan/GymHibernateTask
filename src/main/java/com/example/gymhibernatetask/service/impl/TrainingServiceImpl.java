@@ -10,7 +10,6 @@ import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.service.TrainingService;
 import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -28,7 +27,6 @@ public class TrainingServiceImpl implements TrainingService {
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
     private final TrainingRepository trainingRepository;
-    private final Counter createdTrainingCount;
 
 
     public TrainingServiceImpl(TraineeRepository traineeRepository,
@@ -38,9 +36,6 @@ public class TrainingServiceImpl implements TrainingService {
         this.traineeRepository = traineeRepository;
         this.trainerRepository = trainerRepository;
         this.trainingRepository = trainingRepository;
-        this.createdTrainingCount = Counter.builder("created_training")
-                .description("Number of successful created trainings")
-                .register(meterRegistry);
     }
 
     @Transactional
@@ -74,7 +69,6 @@ public class TrainingServiceImpl implements TrainingService {
         training.setDuration(requestDto.getDuration());
 
         trainingRepository.save(training);
-        createdTrainingCount.increment();
         logger.info("Training created successfully.");
 
         TrainerWorkload trainerWorkload = new TrainerWorkload();

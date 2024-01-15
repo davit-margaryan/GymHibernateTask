@@ -1,20 +1,22 @@
 package com.example.gymhibernatetask;
 
-import com.example.gymhibernatetask.auth.*;
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.auth.AuthenticationController;
+import com.example.gymhibernatetask.auth.AuthenticationRequest;
+import com.example.gymhibernatetask.auth.AuthenticationResponse;
+import com.example.gymhibernatetask.auth.AuthenticationService;
+import com.example.gymhibernatetask.dto.ChangePasswordRequest;
+import com.example.gymhibernatetask.dto.CreateTraineeRequestDto;
+import com.example.gymhibernatetask.dto.CreateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 
 import javax.security.auth.login.AccountLockedException;
 import java.io.IOException;
@@ -35,7 +37,7 @@ class AuthenticationControllerTest {
     private CreateTrainerRequestDto trainerRequestDto;
     private AuthenticationRequest authenticationRequest;
     private ChangePasswordRequest changePasswordRequest;
-    
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -60,14 +62,14 @@ class AuthenticationControllerTest {
         changePasswordRequest.setOldPassword("123ABC");
         changePasswordRequest.setNewPassword("ABC123");
     }
-    
+
     @Test
     void testRegisterTrainee() {
         AuthenticationResponse response = new AuthenticationResponse();
         when(service.registerTrainee(traineeRequestDto)).thenReturn(response);
-        
+
         ResponseEntity<AuthenticationResponse> result = controller.registerTrainee(traineeRequestDto);
-        
+
         verify(service).registerTrainee(traineeRequestDto);
         assertEquals(response, result.getBody());
         assertEquals(HttpStatus.OK, result.getStatusCode());
@@ -77,14 +79,14 @@ class AuthenticationControllerTest {
     void testRegisterTrainer() {
         AuthenticationResponse response = new AuthenticationResponse();
         when(service.registerTrainer(trainerRequestDto)).thenReturn(response);
-        
+
         ResponseEntity<AuthenticationResponse> result = controller.registerTrainer(trainerRequestDto);
-        
+
         verify(service).registerTrainer(trainerRequestDto);
         assertEquals(response, result.getBody());
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }
-    
+
     @Test
     void testAuthenticate() throws AccountLockedException {
         AuthenticationResponse response = new AuthenticationResponse();
@@ -96,7 +98,7 @@ class AuthenticationControllerTest {
         assertEquals(response, result.getBody());
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }
-    
+
     @Test
     void testRefreshToken() throws IOException {
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -106,11 +108,11 @@ class AuthenticationControllerTest {
 
         verify(service).refreshToken(request, response);
     }
-    
+
     @Test
     void testChangePassword() {
         ResponseEntity<String> result = controller.changePassword(changePasswordRequest);
-        
+
         verify(service).changePassword(changePasswordRequest);
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }

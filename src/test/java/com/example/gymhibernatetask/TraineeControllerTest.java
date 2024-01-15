@@ -5,9 +5,13 @@ import com.example.gymhibernatetask.dto.TraineeResponseDto;
 import com.example.gymhibernatetask.dto.TrainerListResponseDto;
 import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
+import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
+import com.example.gymhibernatetask.models.User;
+import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.service.TraineeService;
+import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,6 +36,12 @@ class TraineeControllerTest {
 
     @Mock
     private TraineeService traineeService;
+
+    @Mock
+    private TraineeRepository traineeRepository;
+
+    @Mock
+    private TrainerWorkloadClient workloadClient;
 
     @InjectMocks
     private TraineeController traineeController;
@@ -44,6 +55,12 @@ class TraineeControllerTest {
     @Test
     void testDeleteTrainee() {
         String deleteUsername = "deleteUser";
+        Trainee trainee = new Trainee();
+        User user = new User();
+        user.setUsername(deleteUsername);
+        trainee.setUser(user);
+
+        when(traineeRepository.getTraineeByUserUsername(deleteUsername)).thenReturn(Optional.of(trainee));
 
         ResponseEntity<Void> response = traineeController.deleteTrainee(deleteUsername);
 

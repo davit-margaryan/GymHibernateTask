@@ -20,3 +20,7 @@ eureka:
     register-with-eureka: true # If this property is true, it will automatically register to eureka upon startup
     fetch-registry: true # If this property is true, it will automatically fetch eureka registry upon startup
 
+application:
+  security:
+    jwt:
+      secret-key: 1EYjx0tlp3TGOvaxIrMci+DfkJtYxdxvbFDSG+5f6DHBfQAWDb+D8nd09wJy3zp/c+vn6aTezbJWxwSI2N/AzNIuxdXtHvEEok0JQDaqHQpccwFVqk1iMkcHoxxtepSgLK7PUBmUlGP/JxZ3gH+qi/fB2CtoV1tzAYTl1HH0KbkpFAKu/MnxphIbBBlZqxQSC3w+v25QmsNNmaISOVAEhfZRjzkxbhkwF0Y8s9e+ocQM/6nVtofrAGNnRbyOTkSY6EgV8pn5giJW6DwI0W5G09srRNs5d1nWrPzNjOKRw9UFbg/LkJvFRcaf2X+T8lE1iZCrag4k7ZP7b8+P8gp6MqXhQRXCsY921ex560uvcd4=

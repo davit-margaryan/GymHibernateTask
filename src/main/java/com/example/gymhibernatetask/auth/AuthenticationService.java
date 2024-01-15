@@ -54,7 +54,6 @@ public class AuthenticationService {
     private final UserAttemptService userAttemptService;
 
 
-
     private Counter counter;
 
     @PostConstruct
@@ -134,6 +133,7 @@ public class AuthenticationService {
             throw ex;
         }
     }
+
     @Transactional
     public void changePassword(ChangePasswordRequest dto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

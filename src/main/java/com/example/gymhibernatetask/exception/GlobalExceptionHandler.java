@@ -36,6 +36,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException exc) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exc.getMessage());
     }
+
     @ExceptionHandler(AccountLockedException.class)
     public ResponseEntity<String> handleAccountLockedException(AccountLockedException exc) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(exc.getMessage());
