@@ -5,8 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.ResourceAccessException;
 
 import javax.security.auth.login.AccountLockedException;
+import java.util.concurrent.TimeoutException;
 
 
 @ControllerAdvice
@@ -46,4 +48,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
+
+    @ExceptionHandler(ResourceAccessException.class)
+    public ResponseEntity<String> handleResourceAccessException(ResourceAccessException e) {
+        return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("The server timed out while trying to process the request. Please try again.");
+    }
+
+    @ExceptionHandler({TimeoutException.class})
+    public ResponseEntity<String> handleTimeoutException(TimeoutException e) {
+        return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body(e.getMessage());
+    }
+
 }
