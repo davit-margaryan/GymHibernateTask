@@ -7,6 +7,7 @@ import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TrainerService;
 import com.example.gymhibernatetask.util.TransactionLogger;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import jakarta.jms.*;
 import org.slf4j.Logger;
@@ -15,13 +16,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
-import org.springframework.jms.core.MessagePostProcessor;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -36,11 +36,14 @@ public class TrainerController {
     private final TrainerService trainerService;
     private final JmsTemplate jmsTemplate;
 
+    private final ObjectMapper objectMapper;
+
     public TrainerController(TransactionLogger transactionLogger,
-                             TrainerService trainerService, JmsTemplate jmsTemplate) {
+                             TrainerService trainerService, JmsTemplate jmsTemplate, ObjectMapper objectMapper) {
         this.transactionLogger = transactionLogger;
         this.trainerService = trainerService;
         this.jmsTemplate = jmsTemplate;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/{searchUsername}")
@@ -95,45 +98,63 @@ public class TrainerController {
 
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/summary/{username}")
     public ResponseEntity<TrainerSummary> getTrainerSummary(@PathVariable String username) throws JMSException {
-        String correlationId = UUID.randomUUID().toString();
-        Session session = jmsTemplate.getConnectionFactory().createConnection().createSession(false, Session.AUTO_ACKNOWLEDGE);
-        Destination responseQueue = session.createTemporaryQueue();
+        Connection connection = null;
+        Session session = null;
+        MessageConsumer responseConsumer = null;
 
-        jmsTemplate.convertAndSend("getTrainerSummary.queue", username, new MessagePostProcessor() {
-            @Override
-            public Message postProcessMessage(Message message) throws JMSException {
+        try {
+            String correlationId = UUID.randomUUID().toString();
+            connection = Objects.requireNonNull(jmsTemplate.getConnectionFactory()).createConnection();
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Destination responseQueue = session.createTemporaryQueue();
+
+            logger.info("About to send message for user {}", username);
+            jmsTemplate.convertAndSend("getTrainerSummary.queue", username, message -> {
                 message.setJMSCorrelationID(correlationId);
                 message.setJMSReplyTo(responseQueue);
                 return message;
-            }
-        });
+            });
+            logger.info("Message sent for user {}", username);
 
-        String responseFilter = String.format("JMSCorrelationID = '%s'", correlationId);
-        MessageConsumer responseConsumer = session.createConsumer(responseQueue, responseFilter);
+            connection.start();
+            String selector = String.format("JMSCorrelationID = '%s'", correlationId);
+            responseConsumer = session.createConsumer(responseQueue, selector);
 
-        logger.info("About to wait for response on temporary queue with correlationId {}", correlationId);
+            logger.info("About to receive message");
+            Message responseMessage = responseConsumer.receive(10000);
+            logger.info("Message received");
 
-        Message responseMessage = responseConsumer.receive(10000);
-
-        logger.info("Finished waiting for response on temporary queue");
-
-        if (responseMessage != null) {
-            logger.info("Received response");
-
-            if (responseMessage instanceof ObjectMessage) {
-                logger.info("Response is an ObjectMessage, about to read...");
-                TrainerSummary trainerSummary = (TrainerSummary) ((ObjectMessage)responseMessage).getObject();
-                logger.info("Successfully read the response: {}", trainerSummary);
-                return ResponseEntity.ok(trainerSummary);
+            if (responseMessage != null) {
+                if (responseMessage instanceof TextMessage textMessage) {
+                    try {
+                        TrainerSummary trainerSummary = objectMapper.readValue(textMessage.getText(), TrainerSummary.class);
+                        logger.info("Successfully parsed trainer summary");
+                        return ResponseEntity.ok(trainerSummary);
+                    } catch (IOException e) {
+                        logger.error("Error while parsing responseMessage to TrainerSummary: ", e);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
+                } else {
+                    logger.error("Response is not a TextMessage: {}", responseMessage);
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                }
             } else {
-                logger.error("Response is not an ObjectMessage: {}", responseMessage);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                logger.info("No response received within timeout period");
+                return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).build();
             }
-        } else {
-            logger.info("No response received within timeout period");
-            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).build();
+        } finally {
+            if (responseConsumer != null) {
+                responseConsumer.close();
+            }
+            if (session != null) {
+                session.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
         }
     }
 }

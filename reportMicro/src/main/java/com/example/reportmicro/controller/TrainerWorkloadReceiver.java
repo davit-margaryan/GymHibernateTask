@@ -4,20 +4,15 @@ import com.example.reportmicro.dto.TrainerWorkloadRequest;
 import com.example.reportmicro.model.TrainerSummary;
 import com.example.reportmicro.service.TrainerWorkloadService;
 import jakarta.jms.Destination;
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessagePostProcessor;
+import org.springframework.jms.support.JmsHeaders;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component
 public class TrainerWorkloadReceiver {
@@ -37,20 +32,16 @@ public class TrainerWorkloadReceiver {
     }
 
     @JmsListener(destination = "getTrainerSummary.queue")
-    public void getTrainerSummary(Message message, @Payload String username,
-                                  @Headers Map<String, Object> headers) throws JMSException {
-        String correlationId = (String) headers.get("jms_correlationId");
-        Destination replyTo = message.getJMSReplyTo();
+    public void getTrainerSummary(@Payload String username,
+                                  @Header(name = JmsHeaders.CORRELATION_ID) String correlationId,
+                                  @Header(name = JmsHeaders.REPLY_TO) Destination replyTo) {
+
         TrainerSummary summary = service.calculateMonthlySummary(username, correlationId);
         LOG.info("Sending back summary {} with correlationId {}", summary, correlationId);
 
-        // manually send the response message to the reply queue
-        this.jmsTemplate.convertAndSend(replyTo, summary, new MessagePostProcessor() {
-            @Override
-            public Message postProcessMessage(Message msg) throws JMSException {
-                msg.setJMSCorrelationID(correlationId);
-                return msg;
-            }
+        jmsTemplate.convertAndSend(replyTo, summary, message -> {
+            message.setJMSCorrelationID(correlationId);
+            return message;
         });
     }
 }

@@ -1,8 +1,8 @@
 package com.example.gymhibernatetask.controller;
 
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
-import com.example.gymhibernatetask.service.TrainingService;
 import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
+import com.example.gymhibernatetask.service.TrainingService;
 import io.swagger.annotations.Api;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;

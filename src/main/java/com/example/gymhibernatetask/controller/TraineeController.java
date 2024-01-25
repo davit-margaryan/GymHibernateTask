@@ -1,15 +1,11 @@
 package com.example.gymhibernatetask.controller;
 
-import com.example.gymhibernatetask.dto.TraineeResponseDto;
-import com.example.gymhibernatetask.dto.TrainerListResponseDto;
-import com.example.gymhibernatetask.dto.TrainingDto;
-import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
+import com.example.gymhibernatetask.dto.*;
 import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.service.TraineeService;
-import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
 import jakarta.jms.JMSException;

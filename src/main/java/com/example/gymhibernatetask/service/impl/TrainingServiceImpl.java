@@ -1,6 +1,7 @@
 package com.example.gymhibernatetask.service.impl;
 
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
+import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import com.example.gymhibernatetask.exception.InvalidInputException;
 import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
@@ -9,7 +10,6 @@ import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.service.TrainingService;
-import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;

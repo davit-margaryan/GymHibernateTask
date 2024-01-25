@@ -1,6 +1,7 @@
 package com.example.gymhibernatetask;
 
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
+import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import com.example.gymhibernatetask.exception.InvalidInputException;
 import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
@@ -10,7 +11,6 @@ import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.service.impl.TrainingServiceImpl;
-import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

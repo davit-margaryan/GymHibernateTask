@@ -2,7 +2,6 @@ package com.example.reportmicro.config;
 
 import com.example.reportmicro.dto.TrainerWorkloadRequest;
 import com.example.reportmicro.model.TrainerSummary;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -11,11 +10,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
-import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 import org.springframework.util.ErrorHandler;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +63,6 @@ public class ActiveMqConfig {
             throwable.printStackTrace();
         };
     }
-
 
     @Bean
     public JmsTemplate jmsTemplate() {

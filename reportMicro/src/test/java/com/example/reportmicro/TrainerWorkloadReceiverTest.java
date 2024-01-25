@@ -1,12 +1,7 @@
 package com.example.reportmicro;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
-
 import com.example.reportmicro.controller.TrainerWorkloadReceiver;
 import com.example.reportmicro.dto.TrainerWorkloadRequest;
-import com.example.reportmicro.model.TrainerSummary;
 import com.example.reportmicro.service.TrainerWorkloadService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +10,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.jms.core.JmsTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.mockito.Mockito.*;
 
 public class TrainerWorkloadReceiverTest {
 
