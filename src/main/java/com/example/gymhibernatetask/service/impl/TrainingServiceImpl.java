@@ -9,7 +9,7 @@ import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.service.TrainingService;
-import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
+import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Transactional
     @Override
-    public TrainerWorkload createTraining(CreateTrainingRequestDto requestDto) {
+    public TrainerWorkloadRequest createTraining(CreateTrainingRequestDto requestDto) {
         validateCreateTrainingRequest(requestDto);
         Training training = new Training();
 
@@ -71,7 +71,7 @@ public class TrainingServiceImpl implements TrainingService {
         trainingRepository.save(training);
         logger.info("Training created successfully.");
 
-        TrainerWorkload trainerWorkload = new TrainerWorkload();
+        TrainerWorkloadRequest trainerWorkload = new TrainerWorkloadRequest();
         trainerWorkload.setTrainingDate(requestDto.getDate());
         trainerWorkload.setActive(true);
         trainerWorkload.setActionType("ADD");

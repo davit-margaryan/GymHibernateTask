@@ -11,7 +11,6 @@ import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.service.TraineeService;
-import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +38,6 @@ class TraineeControllerTest {
 
     @Mock
     private TraineeRepository traineeRepository;
-
-    @Mock
-    private TrainerWorkloadClient workloadClient;
 
     @InjectMocks
     private TraineeController traineeController;

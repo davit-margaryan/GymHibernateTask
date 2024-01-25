@@ -1,4 +1,4 @@
-package com.example.gymhibernatetask.trainerWorkload;
+package com.example.gymhibernatetask.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,10 +13,15 @@ import java.util.Map;
 public class TrainerSummary {
 
     private String username;
+
     private String firstName;
+
     private String lastName;
-    private String status;
+
+    private boolean status;
+
     private List<Integer> years;
+
     private Map<String, Map<String, Integer>> monthlySummary;
 
 }

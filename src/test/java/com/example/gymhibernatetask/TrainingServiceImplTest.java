@@ -10,7 +10,7 @@ import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.service.impl.TrainingServiceImpl;
-import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
+import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -69,7 +69,7 @@ public class TrainingServiceImplTest {
         when(traineeRepository.getTraineeByUserUsername("testTrainee")).thenReturn(Optional.of(trainee));
         when(trainerRepository.getTrainerByUserUsername("testTrainer")).thenReturn(Optional.of(trainer));
 
-        TrainerWorkload result = trainingService.createTraining(requestDto);
+        TrainerWorkloadRequest result = trainingService.createTraining(requestDto);
 
         verify(trainingRepository, times(1)).save(any(Training.class));
         assertTrue(result.isActive());

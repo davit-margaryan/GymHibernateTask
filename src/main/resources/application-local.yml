@@ -17,6 +17,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
 
 management:
   endpoints:
@@ -39,14 +43,14 @@ application:
       refresh-token:
         expiration: 604800000
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/ # Replace with the actual Eureka server URL. Make sure it's the same one specified in the secondary microservice's configuration
-    register-with-eureka: true
-    fetch-registry: true
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/ # Replace with the actual Eureka server URL. Make sure it's the same one specified in the secondary microservice's configuration
+#    register-with-eureka: true
+#    fetch-registry: true
 
-report-microservice:
-  url: http://localhost:8087
+#report-microservice:
+#  url: http://localhost:8087
 
 

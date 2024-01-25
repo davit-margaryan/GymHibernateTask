@@ -1,19 +1,23 @@
 package com.example.gymhibernatetask.controller;
 
 import com.example.gymhibernatetask.dto.TrainerResponseDto;
+import com.example.gymhibernatetask.dto.TrainerSummary;
 import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TrainerService;
-import com.example.gymhibernatetask.trainerWorkload.TrainerSummary;
-import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
+import jakarta.jms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
+import org.springframework.jms.core.MessagePostProcessor;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -28,17 +32,15 @@ public class TrainerController {
     private static final String TRANSACTION_INFO = "Received request to fetch trainee profile";
 
     private final Logger logger = LoggerFactory.getLogger(TrainingController.class);
-
     private final TransactionLogger transactionLogger;
     private final TrainerService trainerService;
-    private final TrainerWorkloadClient workloadClient;
+    private final JmsTemplate jmsTemplate;
 
     public TrainerController(TransactionLogger transactionLogger,
-                             TrainerService trainerService,
-                             @Qualifier("com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient") TrainerWorkloadClient workloadClient) {
+                             TrainerService trainerService, JmsTemplate jmsTemplate) {
         this.transactionLogger = transactionLogger;
         this.trainerService = trainerService;
-        this.workloadClient = workloadClient;
+        this.jmsTemplate = jmsTemplate;
     }
 
     @GetMapping("/{searchUsername}")
@@ -93,16 +95,45 @@ public class TrainerController {
 
         return ResponseEntity.noContent().build();
     }
-
     @GetMapping("/summary/{username}")
-    public ResponseEntity<TrainerSummary> getTrainerSummary(@PathVariable String username) {
-        UUID correlationId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
+    public ResponseEntity<TrainerSummary> getTrainerSummary(@PathVariable String username) throws JMSException {
+        String correlationId = UUID.randomUUID().toString();
+        Session session = jmsTemplate.getConnectionFactory().createConnection().createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Destination responseQueue = session.createTemporaryQueue();
 
-        ResponseEntity<TrainerSummary> trainerSummary = workloadClient
-                .getTrainerSummary(username, String.valueOf(correlationId));
+        jmsTemplate.convertAndSend("getTrainerSummary.queue", username, new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws JMSException {
+                message.setJMSCorrelationID(correlationId);
+                message.setJMSReplyTo(responseQueue);
+                return message;
+            }
+        });
 
-        logger.info("CorrelationId {}: Trainer summery calculated successfully", correlationId);
+        String responseFilter = String.format("JMSCorrelationID = '%s'", correlationId);
+        MessageConsumer responseConsumer = session.createConsumer(responseQueue, responseFilter);
 
-        return trainerSummary;
+        logger.info("About to wait for response on temporary queue with correlationId {}", correlationId);
+
+        Message responseMessage = responseConsumer.receive(10000);
+
+        logger.info("Finished waiting for response on temporary queue");
+
+        if (responseMessage != null) {
+            logger.info("Received response");
+
+            if (responseMessage instanceof ObjectMessage) {
+                logger.info("Response is an ObjectMessage, about to read...");
+                TrainerSummary trainerSummary = (TrainerSummary) ((ObjectMessage)responseMessage).getObject();
+                logger.info("Successfully read the response: {}", trainerSummary);
+                return ResponseEntity.ok(trainerSummary);
+            } else {
+                logger.error("Response is not an ObjectMessage: {}", responseMessage);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        } else {
+            logger.info("No response received within timeout period");
+            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).build();
+        }
     }
 }

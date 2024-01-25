@@ -76,10 +76,14 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
             monthlySummary
                     .computeIfAbsent(Integer.toString(year), k -> new HashMap<>())
                     .merge(Integer.toString(month), duration, Integer::sum);
+            trainerSummary.setFirstName(trainerWorkload.getFirstName());
+            trainerSummary.setLastName(trainerWorkload.getLastName());
+            trainerSummary.setStatus(trainerWorkload.isActive());
         }
 
         trainerSummary.setYears(years);
         trainerSummary.setMonthlySummary(monthlySummary);
+
 
         LOG.info("CorrelationId {}: Monthly summary calculated successfully for username: {}", correlationId, trainerUsername);
 

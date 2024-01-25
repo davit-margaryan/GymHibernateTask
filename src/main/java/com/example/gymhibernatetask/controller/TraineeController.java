@@ -9,14 +9,17 @@ import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.service.TraineeService;
-import com.example.gymhibernatetask.trainerWorkload.TrainerWorkload;
-import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
+import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessagePostProcessor;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -33,22 +36,21 @@ public class TraineeController {
     private final TransactionLogger transactionLogger;
     private final TraineeService traineeService;
     private final TraineeRepository traineeRepository;
-    private final TrainerWorkloadClient workloadClient;
+    private final JmsTemplate jmsTemplate;
 
     public TraineeController(TransactionLogger transactionLogger,
                              TraineeService traineeService,
-                             TraineeRepository traineeRepository,
-                             @Qualifier("com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient") TrainerWorkloadClient workloadClient) {
+                             TraineeRepository traineeRepository, JmsTemplate jmsTemplate) {
         this.transactionLogger = transactionLogger;
         this.traineeService = traineeService;
         this.traineeRepository = traineeRepository;
-        this.workloadClient = workloadClient;
+        this.jmsTemplate = jmsTemplate;
     }
 
     @DeleteMapping
     @Transactional
     public ResponseEntity<Void> deleteTrainee(@RequestParam String deleteUsername) {
-        UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
+        UUID correlationId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
         Optional<Trainee> traineeByUserUsername = traineeRepository.getTraineeByUserUsername(deleteUsername);
         if (traineeByUserUsername.isEmpty()) {
             throw new RuntimeException("Trainee not found");
@@ -57,14 +59,24 @@ public class TraineeController {
         if (trainers != null) {
             for (Trainer trainer : trainers) {
                 System.out.println(trainer.getUser().getUsername());
-                TrainerWorkload trainerWorkload = new TrainerWorkload();
+                TrainerWorkloadRequest trainerWorkload = new TrainerWorkloadRequest();
                 trainerWorkload.setUsername(trainer.getUser().getUsername());
                 trainerWorkload.setActionType("DELETE");
-                workloadClient.manageTrainerWorkload(trainerWorkload, String.valueOf(transactionId));
+                jmsTemplate.convertAndSend(
+                        "manageTrainerWorkload.queue",
+                        trainerWorkload,
+                        new MessagePostProcessor() {
+                            @Override
+                            public Message postProcessMessage(@NonNull Message message) throws JMSException {
+                                message.setStringProperty("correlationId", String.valueOf(correlationId));
+                                return message;
+                            }
+                        });
+
             }
         }
         traineeService.deleteTrainee(deleteUsername);
-        transactionLogger.logTransactionSuccess("Trainee deleted successfully", transactionId, deleteUsername);
+        transactionLogger.logTransactionSuccess("Trainee deleted successfully", correlationId, deleteUsername);
 
         return ResponseEntity.noContent().build();
     }

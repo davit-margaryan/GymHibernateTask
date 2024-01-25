@@ -15,7 +15,7 @@ public class TrainerSummary {
     private String username;
     private String firstName;
     private String lastName;
-    private String status;
+    private boolean status;
     private List<Integer> years;
     private Map<String, Map<String, Integer>> monthlySummary;
 

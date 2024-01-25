@@ -6,8 +6,6 @@ import com.example.gymhibernatetask.dto.TrainingDto;
 import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.service.TrainerService;
-import com.example.gymhibernatetask.trainerWorkload.TrainerSummary;
-import com.example.gymhibernatetask.trainerWorkload.TrainerWorkloadClient;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,10 +17,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,9 +26,6 @@ class TrainerControllerTest {
 
     @Mock
     private TransactionLogger transactionLogger;
-
-    @Mock
-    private TrainerWorkloadClient workloadClient;
 
     @Mock
     private TrainerService trainerService;
@@ -106,17 +99,4 @@ class TrainerControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
-    @Test
-    void testGetTrainerSummary() {
-        String username = "testUser";
-        TrainerSummary trainerSummary = new TrainerSummary();
-
-        when(transactionLogger.logTransactionRequest(anyString())).thenReturn(UUID.randomUUID());
-        when(workloadClient.getTrainerSummary(anyString(), anyString())).thenReturn(ResponseEntity.ok(trainerSummary));
-
-        ResponseEntity<TrainerSummary> response = trainerController.getTrainerSummary(username);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(trainerSummary, response.getBody());
-    }
 }
