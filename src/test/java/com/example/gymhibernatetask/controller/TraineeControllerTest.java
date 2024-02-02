@@ -1,6 +1,5 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.controller;
 
-import com.example.gymhibernatetask.controller.TraineeController;
 import com.example.gymhibernatetask.dto.TraineeResponseDto;
 import com.example.gymhibernatetask.dto.TrainerListResponseDto;
 import com.example.gymhibernatetask.dto.TrainingDto;
@@ -12,22 +11,19 @@ import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.service.TraineeService;
 import com.example.gymhibernatetask.util.TransactionLogger;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class TraineeControllerTest {
 
     @Mock
@@ -42,69 +38,55 @@ class TraineeControllerTest {
     @InjectMocks
     private TraineeController traineeController;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
-
     @Test
     void testDeleteTrainee() {
         String deleteUsername = "deleteUser";
-        Trainee trainee = new Trainee();
-        User user = new User();
-        user.setUsername(deleteUsername);
-        trainee.setUser(user);
+        Trainee trainee = mock(Trainee.class);
+        User user = mock(User.class);
+
+        lenient().when(user.getUsername()).thenReturn(deleteUsername);
+        lenient().when(trainee.getUser()).thenReturn(user);
 
         when(traineeRepository.getTraineeByUserUsername(deleteUsername)).thenReturn(Optional.of(trainee));
 
         ResponseEntity<Void> response = traineeController.deleteTrainee(deleteUsername);
 
         verify(traineeService).deleteTrainee(deleteUsername);
-
-        assert response.getStatusCode() == HttpStatus.valueOf(204);
+        assert response.getStatusCode().equals(HttpStatus.NO_CONTENT);
     }
 
     @Test
     void testGetTraineeProfile() {
         String searchUsername = "searchUser";
-
-        when(traineeService.selectTraineeProfile(searchUsername)).thenReturn(new TraineeResponseDto());
+        when(traineeService.selectTraineeProfile(searchUsername)).thenReturn(mock(TraineeResponseDto.class));
 
         ResponseEntity<TraineeResponseDto> response = traineeController.getTraineeProfile(searchUsername);
 
         verify(traineeService).selectTraineeProfile(searchUsername);
-
-        assert response.getStatusCode() == HttpStatus.valueOf(200);
+        assert response.getStatusCode().equals(HttpStatus.OK);
     }
 
     @Test
     void testUpdateTrainee() {
         String username = "testUser";
-        UpdateTraineeRequestDto updateRequestDto = new UpdateTraineeRequestDto();
-
-        when(traineeService.updateTrainee(username, updateRequestDto)).thenReturn(new TraineeResponseDto());
-
+        UpdateTraineeRequestDto updateRequestDto = mock(UpdateTraineeRequestDto.class);
+        when(traineeService.updateTrainee(username, updateRequestDto)).thenReturn(mock(TraineeResponseDto.class));
         ResponseEntity<TraineeResponseDto> response = traineeController.updateTrainee(username, updateRequestDto);
-
         verify(traineeService).updateTrainee(username, updateRequestDto);
-
-        assert response.getStatusCode() == HttpStatus.valueOf(200);
+        assert response.getStatusCode().equals(HttpStatus.OK);
     }
 
     @Test
     void testGetTraineeTrainingsList() {
         String traineeUsername = "testUser";
-        Date periodFrom = new Date();
-        Date periodTo = new Date();
+        Date periodFrom = mock(Date.class);
+        Date periodTo = mock(Date.class);
         String trainerFirstName = "John";
-        TrainingType trainingType = new TrainingType();
-        trainingType.setTrainingTypeName("Cardio");
+        TrainingType trainingType = mock(TrainingType.class);
+        lenient().when(trainingType.getTrainingTypeName()).thenReturn("Cardio");
 
-
-        List<TrainingDto> trainingsList = new ArrayList<>();
         when(traineeService.getTraineeTrainingsList(traineeUsername, periodFrom, periodTo, trainerFirstName, trainingType))
-                .thenReturn(trainingsList);
+                .thenReturn(Arrays.asList(mock(TrainingDto.class)));
 
         ResponseEntity<List<TrainingDto>> response = traineeController.getTraineeTrainingsList(
                 traineeUsername, periodFrom, periodTo, trainerFirstName, trainingType);
@@ -112,7 +94,7 @@ class TraineeControllerTest {
         verify(traineeService).getTraineeTrainingsList(
                 traineeUsername, periodFrom, periodTo, trainerFirstName, trainingType);
 
-        assert response.getStatusCode() == HttpStatus.valueOf(200);
+        assert response.getStatusCode().equals(HttpStatus.OK);
     }
 
     @Test
@@ -133,19 +115,16 @@ class TraineeControllerTest {
     @Test
     void testUpdateTraineeTrainers() {
         String username = "testUser";
-        List<Trainer> trainers = new ArrayList<>();
+        List<Trainer> trainers = Arrays.asList(mock(Trainer.class));
 
-        List<TrainerListResponseDto> updatedTrainers = new ArrayList<>();
-        when(traineeService.updateTraineeTrainers(username, trainers))
-                .thenReturn(updatedTrainers);
+        when(traineeService.updateTraineeTrainers(username, trainers)).thenReturn(Arrays.asList(mock(TrainerListResponseDto.class)));
 
-        ResponseEntity<List<TrainerListResponseDto>> response = traineeController.updateTraineeTrainers(
-                username, trainers);
+        ResponseEntity<List<TrainerListResponseDto>> response = traineeController.updateTraineeTrainers(username, trainers);
 
         verify(traineeService).updateTraineeTrainers(username, trainers);
-
-        assert response.getStatusCode() == HttpStatus.valueOf(200);
+        assert response.getStatusCode().equals(HttpStatus.OK);
     }
+
 
     @Test
     void testChangeActiveStatus() {

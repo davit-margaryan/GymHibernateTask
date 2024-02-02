@@ -1,4 +1,4 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
 import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
@@ -46,28 +45,26 @@ public class TrainingServiceImplTest {
 
     @Test
     void testCreateTraining() {
-        CreateTrainingRequestDto requestDto = new CreateTrainingRequestDto();
-        requestDto.setTraineeUsername("testTrainee");
-        requestDto.setTrainerUsername("testTrainer");
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, 10);
-        Date futureDate = calendar.getTime();
+        CreateTrainingRequestDto requestDto = mock(CreateTrainingRequestDto.class);
+        Date futureDate = mock(Date.class);
 
-        requestDto.setDate(futureDate);
-        requestDto.setDuration(1500);
+        when(requestDto.getTraineeUsername()).thenReturn("testTrainee");
+        when(requestDto.getTrainerUsername()).thenReturn("testTrainer");
+        when(requestDto.getDate()).thenReturn(futureDate);
+        when(requestDto.getDuration()).thenReturn(1500);
 
-        Trainee trainee = new Trainee();
-        Trainer trainer = new Trainer();
-        User user = new User();
-        user.setFirstName("firstName");
-        user.setLastName("lastName");
-        trainer.setUser(user);
+        Trainee mockTrainee = mock(Trainee.class);
+        Trainer mockTrainer = mock(Trainer.class);
+        User mockUser = mock(User.class);
 
-        trainee.setTrainers(new ArrayList<>());
-        trainer.setTrainees(new ArrayList<>());
+        when(mockTrainee.getTrainers()).thenReturn(new ArrayList<>());
+        when(mockTrainer.getUser()).thenReturn(mockUser);
+        when(mockTrainer.getTrainees()).thenReturn(new ArrayList<>());
+        when(mockUser.getFirstName()).thenReturn("firstName");
+        when(mockUser.getLastName()).thenReturn("lastName");
 
-        when(traineeRepository.getTraineeByUserUsername("testTrainee")).thenReturn(Optional.of(trainee));
-        when(trainerRepository.getTrainerByUserUsername("testTrainer")).thenReturn(Optional.of(trainer));
+        when(traineeRepository.getTraineeByUserUsername("testTrainee")).thenReturn(Optional.of(mockTrainee));
+        when(trainerRepository.getTrainerByUserUsername("testTrainer")).thenReturn(Optional.of(mockTrainer));
 
         TrainerWorkloadRequest result = trainingService.createTraining(requestDto);
 
@@ -77,10 +74,9 @@ public class TrainingServiceImplTest {
 
     @Test
     void testCreateTraining_InvalidInputException() {
-        CreateTrainingRequestDto requestDto = new CreateTrainingRequestDto();
-        requestDto.setTraineeUsername("testTrainee");
-        requestDto.setTrainerUsername("testTrainer");
+        CreateTrainingRequestDto requestDto = mock(CreateTrainingRequestDto.class);
 
+        when(requestDto.getTraineeUsername()).thenReturn("testTrainee");
         when(traineeRepository.getTraineeByUserUsername("testTrainee")).thenReturn(Optional.empty());
 
         assertThrows(InvalidInputException.class, () -> {

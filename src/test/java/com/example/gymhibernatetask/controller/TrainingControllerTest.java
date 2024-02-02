@@ -1,6 +1,5 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.controller;
 
-import com.example.gymhibernatetask.controller.TrainingController;
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
 import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import com.example.gymhibernatetask.service.TrainingService;
@@ -41,8 +40,8 @@ class TrainingControllerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-        CreateTrainingRequestDto newTraining = new CreateTrainingRequestDto();
-        TrainerWorkloadRequest trainerWorkload = new TrainerWorkloadRequest();
+        CreateTrainingRequestDto newTraining = mock(CreateTrainingRequestDto.class);
+        TrainerWorkloadRequest trainerWorkload = mock(TrainerWorkloadRequest.class);
 
         when(trainingService.createTraining(any())).thenReturn(trainerWorkload);
 

@@ -1,4 +1,4 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.dto.TrainerResponseDto;
 import com.example.gymhibernatetask.dto.TrainingDto;
@@ -10,7 +10,6 @@ import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
-import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.service.impl.TrainerServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -62,8 +61,8 @@ class TrainerServiceImplTest {
     void selectTraineeProfile_success() {
         String searchUsername = "existingUser";
 
-        Trainer expectedTrainer = new Trainer();
-        when(trainerRepository.getTrainerByUserUsername(searchUsername)).thenReturn(Optional.of(expectedTrainer));
+        Trainer mockTrainer = mock(Trainer.class);
+        when(trainerRepository.getTrainerByUserUsername(searchUsername)).thenReturn(Optional.of(mockTrainer));
 
         TrainerResponseDto result = trainerService.selectTrainerProfile(searchUsername);
 
@@ -85,54 +84,44 @@ class TrainerServiceImplTest {
         String loggedInUsername = "loggedInUser";
         boolean activeStatus = true;
 
+        Trainer mockTrainer = mock(Trainer.class);
+        User mockUser = mock(User.class);
 
-        Trainer existingTrainer = mock(Trainer.class);
-        User existingUser = mock(User.class);
-
-        when(trainerRepository.getTrainerByUserUsername(loggedInUsername)).thenReturn(Optional.of(existingTrainer));
-
-        when(existingTrainer.getUser()).thenReturn(existingUser);
-        when(existingUser.getUsername()).thenReturn(loggedInUsername);
+        when(trainerRepository.getTrainerByUserUsername(loggedInUsername)).thenReturn(Optional.of(mockTrainer));
+        when(mockTrainer.getUser()).thenReturn(mockUser);
+        when(mockUser.getUsername()).thenReturn(loggedInUsername);
 
         trainerService.changeActiveStatus(loggedInUsername, activeStatus);
 
-        verify(existingUser, times(1)).setActive(activeStatus);
-        verify(userRepository, times(1)).save(existingUser);
+        verify(mockUser, times(1)).setActive(activeStatus);
+        verify(userRepository, times(1)).save(mockUser);
     }
 
     @Test
     void getTraineeTrainingsList_success() {
         String traineeUsername = "traineeUser";
-        Date periodFrom = new Date();
-        Date periodTo = new Date();
+        Date periodFrom = mock(Date.class);
+        Date periodTo = mock(Date.class);
 
-        Trainer trainer = mock(Trainer.class);
-        User user = mock(User.class);
-        when(trainer.getUser()).thenReturn(user);
-        when(user.getUsername()).thenReturn(traineeUsername);
+        Trainer mockTrainer = mock(Trainer.class);
+        User mockUser = mock(User.class);
+        TrainingType mockTrainingType = mock(TrainingType.class);
 
-        when(trainerRepository.getTrainerByUserUsername(traineeUsername)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.getTrainerByUserUsername(traineeUsername)).thenReturn(Optional.of(mockTrainer));
+        when(mockTrainer.getUser()).thenReturn(mockUser);
+        when(mockUser.getUsername()).thenReturn(traineeUsername);
+        when(mockTrainingType.getTrainingTypeName()).thenReturn("Body");
 
-        TrainingType trainingType = mock(TrainingType.class);
-        when(trainingType.getTrainingTypeName()).thenReturn("Body");
-
-        List<Training> mockTrainings = Arrays.asList(
-                new Training(),
-                new Training()
-        );
-        when(trainingRepository.findByTrainerAndCriteria(
-                trainer, periodFrom, periodTo, user.getFirstName(), trainingType.getTrainingTypeName()))
+        List<Training> mockTrainings = Arrays.asList(mock(Training.class), mock(Training.class));
+        when(trainingRepository.findByTrainerAndCriteria(mockTrainer, periodFrom, periodTo, mockUser.getFirstName(), mockTrainingType.getTrainingTypeName()))
                 .thenReturn(mockTrainings);
 
-        List<TrainingDto> result = trainerService.getTrainerTrainingsList(
-                traineeUsername, periodFrom, periodTo, user.getFirstName(), trainingType);
+        List<TrainingDto> result = trainerService.getTrainerTrainingsList(traineeUsername, periodFrom, periodTo, mockUser.getFirstName(), mockTrainingType);
 
         verify(trainerRepository, times(1)).getTrainerByUserUsername(traineeUsername);
-        verify(trainingRepository, times(1)).findByTrainerAndCriteria(
-                trainer, periodFrom, periodTo, user.getFirstName(), trainingType.getTrainingTypeName());
+        verify(trainingRepository, times(1)).findByTrainerAndCriteria(mockTrainer, periodFrom, periodTo, mockUser.getFirstName(), mockTrainingType.getTrainingTypeName());
 
         assertNotNull(result);
         assertEquals(mockTrainings.size(), result.size());
     }
-
 }

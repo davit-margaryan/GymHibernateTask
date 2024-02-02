@@ -1,4 +1,4 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.auth.UserAttemptService;
 import com.example.gymhibernatetask.models.UserLoginAttempt;
@@ -26,10 +26,10 @@ class UserAttemptServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        UserLoginAttempt attempt = new UserLoginAttempt();
-        attempt.setUsername("testUser");
-        attempt.setAttempts(0);
-        attempt.setLastAttempt(LocalDateTime.now());
+        UserLoginAttempt attempt = mock(UserLoginAttempt.class);
+        when(attempt.getUsername()).thenReturn("testUser");
+        when(attempt.getAttempts()).thenReturn(0);
+        when(attempt.getLastAttempt()).thenReturn(LocalDateTime.now());
 
         when(attemptRepository.getByUsername("testUser")).thenReturn(Optional.of(attempt));
         when(attemptRepository.getByUsername("nonexistentUser")).thenReturn(Optional.empty());
@@ -51,10 +51,10 @@ class UserAttemptServiceTest {
 
     @Test
     void whenUserIsBlocked_thenReturnsTrue() {
-        UserLoginAttempt attempt = new UserLoginAttempt();
-        attempt.setUsername("testUser");
-        attempt.setAttempts(3);
-        attempt.setLastAttempt(LocalDateTime.now().minusMinutes(1));
+        UserLoginAttempt attempt = mock(UserLoginAttempt.class);
+        when(attempt.getUsername()).thenReturn("testUser");
+        when(attempt.getAttempts()).thenReturn(3);
+        when(attempt.getLastAttempt()).thenReturn(LocalDateTime.now().minusMinutes(1));
 
         when(attemptRepository.getByUsername("testUser")).thenReturn(Optional.of(attempt));
 

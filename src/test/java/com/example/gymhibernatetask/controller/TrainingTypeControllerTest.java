@@ -1,6 +1,5 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.controller;
 
-import com.example.gymhibernatetask.controller.TrainingTypeController;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.repository.TrainingTypeRepository;
 import com.example.gymhibernatetask.service.TrainingTypeService;
@@ -17,8 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class TrainingTypeControllerTest {
 
@@ -45,7 +43,7 @@ class TrainingTypeControllerTest {
 
         when(transactionLogger.logTransactionRequest("Received request to fetch all training types")).thenReturn(transactionId);
 
-        List<TrainingType> trainingTypes = List.of(new TrainingType(), new TrainingType());
+        List<TrainingType> trainingTypes = List.of(mock(TrainingType.class), mock(TrainingType.class));
         when(trainingTypeRepository.findAll()).thenReturn(trainingTypes);
 
         ResponseEntity<List<TrainingType>> response = trainingTypeController.getAllTrainingTypes();

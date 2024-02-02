@@ -1,4 +1,4 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.dto.TraineeResponseDto;
 import com.example.gymhibernatetask.dto.TrainerListResponseDto;
@@ -10,7 +10,6 @@ import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
-import com.example.gymhibernatetask.service.UserService;
 import com.example.gymhibernatetask.service.impl.TraineeServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -21,7 +20,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,8 +67,9 @@ class TraineeServiceImplTest {
     void deleteTrainee_whenTraineeExists() {
         String username = "testUser";
         User user = mock(User.class);
-        Trainee trainee = new Trainee();
-        trainee.setUser(user);
+        Trainee trainee = mock(Trainee.class);
+
+        when(trainee.getUser()).thenReturn(user);
         when(traineeRepository.getTraineeByUserUsername(username)).thenReturn(Optional.of(trainee));
 
         traineeService.deleteTrainee(username);
@@ -87,7 +90,7 @@ class TraineeServiceImplTest {
     void selectTraineeProfile_success() {
         String searchUsername = "existingUser";
 
-        Trainee expectedTrainee = new Trainee();
+        Trainee expectedTrainee = mock(Trainee.class);
         when(traineeRepository.getTraineeByUserUsername(searchUsername)).thenReturn(Optional.of(expectedTrainee));
 
         TraineeResponseDto result = traineeService.selectTraineeProfile(searchUsername);
@@ -108,17 +111,26 @@ class TraineeServiceImplTest {
     @Test
     void updateTrainee_success() {
         String username = "admin";
-        UpdateTraineeRequestDto updateRequestDto = new UpdateTraineeRequestDto();
-        updateRequestDto.setUsername("newUsername");
-        updateRequestDto.setFirstName("NewFirstName");
-        updateRequestDto.setLastName("NewLastName");
-        updateRequestDto.setActive(true);
-        updateRequestDto.setAddress("NewAddress");
+        UpdateTraineeRequestDto updateRequestDto = mock(UpdateTraineeRequestDto.class);
 
-        Trainee expectedTrainee = new Trainee();
-        User user = new User();
-        expectedTrainee.setUser(user);
-        when(traineeRepository.getTraineeByUserUsername(username)).thenReturn(Optional.of(expectedTrainee));
+        when(updateRequestDto.getUsername()).thenReturn("newUsername");
+        when(updateRequestDto.getFirstName()).thenReturn("NewFirstName");
+        when(updateRequestDto.getLastName()).thenReturn("NewLastName");
+        when(updateRequestDto.isActive()).thenReturn(true);
+        when(updateRequestDto.getAddress()).thenReturn("NewAddress");
+
+        Trainee mockTrainee = mock(Trainee.class);
+        User user = mock(User.class);
+        when(mockTrainee.getUser()).thenReturn(user);
+
+        when(traineeRepository.getTraineeByUserUsername(username)).thenReturn(Optional.of(mockTrainee));
+
+        TraineeResponseDto mockTraineeResponseDto = mock(TraineeResponseDto.class);
+        when(mockTraineeResponseDto.getFirstName()).thenReturn("NewFirstName");
+        when(mockTraineeResponseDto.getLastName()).thenReturn("NewLastName");
+        when(mockTraineeResponseDto.isActive()).thenReturn(true);
+        when(mockTraineeResponseDto.getAddress()).thenReturn("NewAddress");
+
 
         TraineeResponseDto result = traineeService.updateTrainee(username, updateRequestDto);
 
@@ -126,18 +138,18 @@ class TraineeServiceImplTest {
         verify(traineeRepository, times(1)).getTraineeByUserUsername(username);
         verify(userRepository, times(1)).save(any(User.class));
         verify(traineeRepository, times(1)).save(any(Trainee.class));
-
     }
 
 
     @Test
     void updateTrainee_failure_invalidInput() {
-        UpdateTraineeRequestDto updateRequestDto = new UpdateTraineeRequestDto();
-        updateRequestDto.setUsername("existingUsername");
-        updateRequestDto.setFirstName("John");
-        updateRequestDto.setLastName("Doe");
+        UpdateTraineeRequestDto updateRequestDto = mock(UpdateTraineeRequestDto.class);
+        when(updateRequestDto.getUsername()).thenReturn("existingUsername");
+        when(updateRequestDto.getFirstName()).thenReturn("John");
+        when(updateRequestDto.getLastName()).thenReturn("Doe");
 
-        Trainee existingTrainee = new Trainee();
+        Trainee existingTrainee = mock(Trainee.class);
+
         when(traineeRepository.getTraineeByUserUsername("existingUsername")).thenReturn(Optional.of(existingTrainee));
 
         assertThrows(NotFoundException.class, () -> traineeService.updateTrainee("loggedInUser", updateRequestDto));
@@ -167,19 +179,9 @@ class TraineeServiceImplTest {
         String loggedInUsername = "loggedInUser";
 
         Trainee existingTrainee = mock(Trainee.class);
-
         when(traineeRepository.getTraineeByUserUsername(loggedInUsername)).thenReturn(Optional.of(existingTrainee));
 
-        List<Trainer> trainers = new ArrayList<>();
-        Trainer trainer1 = mock(Trainer.class);
-        Trainer trainer2 = mock(Trainer.class);
-        trainers.add(trainer1);
-        trainers.add(trainer2);
-
-        User user1 = mock(User.class);
-        User user2 = mock(User.class);
-        when(trainer1.getUser()).thenReturn(user1);
-        when(trainer2.getUser()).thenReturn(user2);
+        List<Trainer> trainers = Arrays.asList(mock(Trainer.class), mock(Trainer.class));
 
         List<TrainerListResponseDto> result = traineeService.updateTraineeTrainers(loggedInUsername, trainers);
 
@@ -190,12 +192,11 @@ class TraineeServiceImplTest {
         assertNotNull(result);
     }
 
-
     @Test
     void getTraineeTrainingsList_success() {
         String traineeUsername = "traineeUser";
-        Date periodFrom = new Date();
-        Date periodTo = new Date();
+        Date periodFrom = mock(Date.class);
+        Date periodTo = mock(Date.class);
 
         Trainee trainee = mock(Trainee.class);
         User user = mock(User.class);
@@ -208,8 +209,8 @@ class TraineeServiceImplTest {
         when(trainingType.getTrainingTypeName()).thenReturn("Body");
 
         List<Training> mockTrainings = Arrays.asList(
-                new Training(),
-                new Training()
+                mock(Training.class),
+                mock(Training.class)
         );
         when(trainingRepository.findByTraineeAndCriteria(
                 trainee, periodFrom, periodTo, user.getFirstName(), trainingType.getTrainingTypeName()))
@@ -225,7 +226,6 @@ class TraineeServiceImplTest {
         assertNotNull(result);
         assertEquals(mockTrainings.size(), result.size());
     }
-
 
     @Test
     void getAvailableTrainersForTrainee_success() {

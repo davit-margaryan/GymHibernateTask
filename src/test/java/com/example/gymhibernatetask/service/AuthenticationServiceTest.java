@@ -1,11 +1,19 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.auth.AuthenticationRequest;
 import com.example.gymhibernatetask.auth.AuthenticationService;
 import com.example.gymhibernatetask.auth.UserAttemptService;
 import com.example.gymhibernatetask.config.JwtService;
+import com.example.gymhibernatetask.dto.ChangePasswordRequest;
+import com.example.gymhibernatetask.dto.CreateTraineeRequestDto;
+import com.example.gymhibernatetask.dto.CreateTrainerRequestDto;
+import com.example.gymhibernatetask.models.Trainee;
+import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.User;
+import com.example.gymhibernatetask.repository.TraineeRepository;
+import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
+import com.example.gymhibernatetask.token.Token;
 import com.example.gymhibernatetask.token.TokenRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -21,7 +29,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.security.auth.login.AccountLockedException;
 import java.io.ByteArrayOutputStream;
@@ -48,13 +61,25 @@ class AuthenticationServiceTest {
     private AuthenticationManager authenticationManager;
 
     @Mock
+    private UserService userService;
+
+    @Mock
     private UserAttemptService userAttemptService;
 
     @Mock
     private MeterRegistry meterRegistry;
 
     @Mock
+    private TrainerRepository trainerRepository;
+
+    @Mock
+    private TraineeRepository traineeRepository;
+
+    @Mock
     private Counter counter;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private AuthenticationService authenticationService;
@@ -143,5 +168,47 @@ class AuthenticationServiceTest {
         verify(jwtService).extractUsername(anyString());
         verify(jwtService).isTokenValid(anyString(), any());
         verify(jwtService).generateToken(user);
+    }
+
+    @Test
+    public void testRegisterTrainee() {
+        CreateTraineeRequestDto createTraineeRequestDto = mock(CreateTraineeRequestDto.class);
+        when(userService.createUser(createTraineeRequestDto)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        authenticationService.registerTrainee(createTraineeRequestDto);
+
+        verify(traineeRepository).save(any(Trainee.class));
+        verify(tokenRepository).save(any(Token.class));
+    }
+
+    @Test
+    public void testRegisterTrainer() {
+        CreateTrainerRequestDto createTrainerRequestDto = mock(CreateTrainerRequestDto.class);
+        when(userService.createUser(createTrainerRequestDto)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        authenticationService.registerTrainer(createTrainerRequestDto);
+
+        verify(trainerRepository).save(any(Trainer.class));
+        verify(tokenRepository).save(any(Token.class));
+    }
+
+    @Test
+    public void changePasswordTest() {
+        ChangePasswordRequest changePasswordRequest = mock(ChangePasswordRequest.class);
+        when(changePasswordRequest.getOldPassword()).thenReturn("password123");
+        when(changePasswordRequest.getNewPassword()).thenReturn("newPassword123");
+        String username = "username";
+        Object principal = mock(UserDetails.class);
+        when(((UserDetails) principal).getUsername()).thenReturn(username);
+        Authentication authentication = new TestingAuthenticationToken(principal, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        when(userRepository.getByUsername(username)).thenReturn(Optional.of(user));
+
+        authenticationService.changePassword(changePasswordRequest);
+
+        verify(userRepository).save(any(User.class));
+        verify(tokenRepository).save(any(Token.class));
     }
 }

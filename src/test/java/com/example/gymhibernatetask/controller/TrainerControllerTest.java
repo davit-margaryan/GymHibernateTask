@@ -1,6 +1,5 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.controller;
 
-import com.example.gymhibernatetask.controller.TrainerController;
 import com.example.gymhibernatetask.dto.TrainerResponseDto;
 import com.example.gymhibernatetask.dto.TrainerSummary;
 import com.example.gymhibernatetask.dto.TrainingDto;
@@ -20,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jms.core.JmsTemplate;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -53,48 +53,44 @@ class TrainerControllerTest {
     void testGetTrainerProfile() {
         String searchUsername = "searchUser";
 
-        when(trainerService.selectTrainerProfile(searchUsername)).thenReturn(new TrainerResponseDto());
+        when(trainerService.selectTrainerProfile(searchUsername)).thenReturn(mock(TrainerResponseDto.class));
 
         ResponseEntity<TrainerResponseDto> response = trainerController.getTrainerProfile(searchUsername);
 
         verify(trainerService).selectTrainerProfile(searchUsername);
-
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void testUpdateTrainer() {
         String username = "testUser";
-        UpdateTrainerRequestDto updateRequestDto = new UpdateTrainerRequestDto();
+        UpdateTrainerRequestDto updateRequestDto = mock(UpdateTrainerRequestDto.class);
 
-        when(trainerService.updateTrainer(username, updateRequestDto)).thenReturn(new TrainerResponseDto());
+        when(trainerService.updateTrainer(username, updateRequestDto)).thenReturn(mock(TrainerResponseDto.class));
 
         ResponseEntity<TrainerResponseDto> response = trainerController.updateTrainer(username, updateRequestDto);
 
         verify(trainerService).updateTrainer(username, updateRequestDto);
-
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void testGetTrainerTrainingsList() {
         String trainerUsername = "testUser";
-        Date periodFrom = new Date();
-        Date periodTo = new Date();
+        Date periodFrom = mock(Date.class);
+        Date periodTo = mock(Date.class);
         String traineeName = "John";
-        TrainingType trainingType = new TrainingType();
-        trainingType.setTrainingTypeName("Cardio");
+        TrainingType trainingType = mock(TrainingType.class);
 
-        List<TrainingDto> trainingsList = List.of();
+        when(trainingType.getTrainingTypeName()).thenReturn("Cardio");
         when(trainerService.getTrainerTrainingsList(trainerUsername, periodFrom, periodTo, traineeName, trainingType))
-                .thenReturn(trainingsList);
+                .thenReturn(Arrays.asList(mock(TrainingDto.class)));
 
         ResponseEntity<List<TrainingDto>> response = trainerController.getTrainerTrainingsList(
                 trainerUsername, periodFrom, periodTo, traineeName, trainingType);
 
         verify(trainerService).getTrainerTrainingsList(
                 trainerUsername, periodFrom, periodTo, traineeName, trainingType);
-
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -112,26 +108,27 @@ class TrainerControllerTest {
 
     @Test
     public void testGetTrainerSummary() throws JMSException, IOException {
+        String username = "username";
+
         Connection connection = mock(Connection.class);
         Session session = mock(Session.class);
         MessageConsumer messageConsumer = mock(MessageConsumer.class);
         TextMessage message = mock(TextMessage.class);
         ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+        TemporaryQueue tempQueue = mock(TemporaryQueue.class);
 
         when(connection.createSession(anyBoolean(), anyInt())).thenReturn(session);
-        TemporaryQueue tempQueue = mock(TemporaryQueue.class);
-        doReturn(tempQueue).when(session).createTemporaryQueue();
+        when(session.createTemporaryQueue()).thenReturn(tempQueue);
         when(connectionFactory.createConnection()).thenReturn(connection);
         when(jmsTemplate.getConnectionFactory()).thenReturn(connectionFactory);
         when(session.createConsumer(any(Destination.class), anyString())).thenReturn(messageConsumer);
-
-        TrainerSummary summary = new TrainerSummary();
-        when(objectMapper.readValue(anyString(), eq(TrainerSummary.class))).thenReturn(summary);
-
         when(messageConsumer.receive(anyLong())).thenReturn(message);
         when(message.getText()).thenReturn("{}");
 
-        ResponseEntity<TrainerSummary> result = trainerController.getTrainerSummary("username");
+        TrainerSummary summary = mock(TrainerSummary.class);
+        when(objectMapper.readValue(anyString(), eq(TrainerSummary.class))).thenReturn(summary);
+
+        ResponseEntity<TrainerSummary> result = trainerController.getTrainerSummary(username);
 
         assertNotNull(result.getBody());
         assertEquals(summary, result.getBody());

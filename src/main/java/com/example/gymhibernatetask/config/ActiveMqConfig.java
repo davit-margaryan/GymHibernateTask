@@ -50,4 +50,12 @@ public class ActiveMqConfig {
         converter.setTypeIdMappings(typeIdMappings);
         return converter;
     }
+
+    public Environment getEnv() {
+        return env;
+    }
+
+    public void setEnv(Environment env) {
+        this.env = env;
+    }
 }

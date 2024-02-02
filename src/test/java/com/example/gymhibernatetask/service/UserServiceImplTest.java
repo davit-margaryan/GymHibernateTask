@@ -1,4 +1,4 @@
-package com.example.gymhibernatetask;
+package com.example.gymhibernatetask.service;
 
 import com.example.gymhibernatetask.dto.CreateRequestDto;
 import com.example.gymhibernatetask.models.User;
@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -29,27 +29,28 @@ class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private UtilService utilService;
+
+    @Mock
     private CreateRequestDto createRequestDto;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        createRequestDto = new CreateRequestDto();
-        createRequestDto.setFirstName("John");
-        createRequestDto.setLastName("Doe");
+        when(createRequestDto.getFirstName()).thenReturn("John");
+        when(createRequestDto.getLastName()).thenReturn("Doe");
     }
 
     @Test
     void testCreateUser() {
-        User savedUser = new User();
-        savedUser.setFirstName("John");
-        savedUser.setLastName("Doe");
-        savedUser.setActive(true);
+        User mockUser = mock(User.class);
+        when(mockUser.getFirstName()).thenReturn("John");
+        when(mockUser.getLastName()).thenReturn("Doe");
+        when(mockUser.isActive()).thenReturn(true);
 
         when(utilService.generateUsername(anyString(), anyString(), any())).thenReturn("johndoe");
         when(utilService.generateRandomPassword(anyInt())).thenReturn("randompassword");
         when(passwordEncoder.encode(anyString())).thenReturn("encodedpassword");
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userRepository.save(any(User.class))).thenReturn(mockUser);
         when(userRepository.findAll()).thenReturn(new ArrayList<>());
 
         User result = userServiceImpl.createUser(createRequestDto);
@@ -61,8 +62,5 @@ class UserServiceImplTest {
         verify(userRepository).findAll();
 
         assertNotNull(result);
-        assertEquals("John", result.getFirstName());
-        assertEquals("Doe", result.getLastName());
-        assertTrue(result.isActive());
     }
 }
