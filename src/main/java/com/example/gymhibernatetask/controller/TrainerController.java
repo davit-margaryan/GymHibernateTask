@@ -124,7 +124,7 @@ public class TrainerController {
             responseConsumer = session.createConsumer(responseQueue, selector);
 
             logger.info("About to receive message");
-            Message responseMessage = responseConsumer.receive(10000);
+            Message responseMessage = responseConsumer.receive(5000);
             logger.info("Message received");
 
             if (responseMessage != null) {

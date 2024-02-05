@@ -23,13 +23,13 @@ public class UpdateTraineeRequestDtoTest {
 
     private UpdateTraineeRequestDto createUpdateTraineeRequestDto(String username, String firstName,
                                                                   String lastName, Date dateOfBirth,
-                                                                  String address, boolean isActive) {
-        return new UpdateTraineeRequestDto(username, firstName, lastName, dateOfBirth, address, isActive);
+                                                                  String address) {
+        return new UpdateTraineeRequestDto(username, firstName, lastName, dateOfBirth, address, true);
     }
 
     @Test
     public void testValidationFailsWithInvalidFields() {
-        UpdateTraineeRequestDto dto = createUpdateTraineeRequestDto("", "", "", null, "", true);
+        UpdateTraineeRequestDto dto = createUpdateTraineeRequestDto("", "", "", null, "");
 
         Set<ConstraintViolation<UpdateTraineeRequestDto>> violations = validator.validate(dto);
 
@@ -39,7 +39,7 @@ public class UpdateTraineeRequestDtoTest {
     @Test
     public void testValidationSucceedsWithValidFields() {
         UpdateTraineeRequestDto dto = createUpdateTraineeRequestDto("username", "First", "Last",
-                new Date(), "Address", true);
+                new Date(), "Address");
 
         Set<ConstraintViolation<UpdateTraineeRequestDto>> violations = validator.validate(dto);
 

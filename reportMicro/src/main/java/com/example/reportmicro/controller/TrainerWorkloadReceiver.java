@@ -36,12 +36,13 @@ public class TrainerWorkloadReceiver {
                                   @Header(name = JmsHeaders.CORRELATION_ID) String correlationId,
                                   @Header(name = JmsHeaders.REPLY_TO) Destination replyTo) {
 
-        TrainerSummary summary = service.calculateMonthlySummary(username, correlationId);
+        TrainerSummary summary = service.calculateSummary(username, correlationId);
         LOG.info("Sending back summary {} with correlationId {}", summary, correlationId);
-
-        jmsTemplate.convertAndSend(replyTo, summary, message -> {
-            message.setJMSCorrelationID(correlationId);
-            return message;
-        });
+        if (summary != null) {
+            jmsTemplate.convertAndSend(replyTo, summary, message -> {
+                message.setJMSCorrelationID(correlationId);
+                return message;
+            });
+        }
     }
 }

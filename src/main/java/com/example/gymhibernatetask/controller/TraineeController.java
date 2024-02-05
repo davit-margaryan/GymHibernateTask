@@ -54,7 +54,6 @@ public class TraineeController {
         List<Trainer> trainers = traineeByUserUsername.get().getTrainers();
         if (trainers != null) {
             for (Trainer trainer : trainers) {
-                System.out.println(trainer.getUser().getUsername());
                 TrainerWorkloadRequest trainerWorkload = new TrainerWorkloadRequest();
                 trainerWorkload.setUsername(trainer.getUser().getUsername());
                 trainerWorkload.setActionType("DELETE");

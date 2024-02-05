@@ -11,5 +11,5 @@ public interface TrainerWorkloadRepository extends JpaRepository<TrainerWorkload
 
     List<TrainerWorkload> getAllByUsername(String username);
 
-    void deleteByUsername(String username);
+    void deleteAllByUsername(String username);
 }

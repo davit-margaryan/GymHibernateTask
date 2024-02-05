@@ -3,6 +3,7 @@ package com.example.reportmicro.service.impl;
 import com.example.reportmicro.dto.TrainerWorkloadRequest;
 import com.example.reportmicro.model.TrainerSummary;
 import com.example.reportmicro.model.TrainerWorkload;
+import com.example.reportmicro.repo.TrainerSummaryRepository;
 import com.example.reportmicro.repo.TrainerWorkloadRepository;
 import com.example.reportmicro.service.TrainerWorkloadService;
 import jakarta.transaction.Transactional;
@@ -21,6 +22,9 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
 
     @Autowired
     private TrainerWorkloadRepository repository;
+
+    @Autowired
+    private TrainerSummaryRepository trainerSummaryRepository;
 
     @Override
     public void manageTrainerWorkload(TrainerWorkloadRequest request, String correlationId) {
@@ -45,12 +49,20 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
         LOG.info("CorrelationId {}: Successfully processed request for trainer: {}", correlationId, request.getUsername());
     }
 
-    public TrainerSummary calculateMonthlySummary(String trainerUsername, String correlationId) {
-        LOG.info("CorrelationId {}: Calculating monthly summary for username: {}", correlationId, trainerUsername);
+    @Override
+    public TrainerSummary calculateSummary(String trainerUsername, String correlationId) {
+        LOG.info("CorrelationId {}: Calculating summary for username: {}", correlationId, trainerUsername);
         List<TrainerWorkload> trainerWorkloads = repository.getAllByUsername(trainerUsername);
+
+        if (trainerWorkloads.isEmpty()) {
+            return null;
+        }
         LOG.info("CorrelationId {}: Found {} workloads for trainer: {}", correlationId, trainerWorkloads.size(), trainerUsername);
 
-        TrainerSummary trainerSummary = new TrainerSummary();
+        Optional<TrainerSummary> optionalTrainerSummary = trainerSummaryRepository.findByUsername(trainerUsername);
+
+        TrainerSummary trainerSummary;
+        trainerSummary = optionalTrainerSummary.orElseGet(TrainerSummary::new);
         trainerSummary.setUsername(trainerUsername);
 
         List<Integer> years = new ArrayList<>();
@@ -85,8 +97,8 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
         trainerSummary.setMonthlySummary(monthlySummary);
 
 
-        LOG.info("CorrelationId {}: Monthly summary calculated successfully for username: {}", correlationId, trainerUsername);
-
+        LOG.info("CorrelationId {}: Summary calculated successfully for username: {}", correlationId, trainerUsername);
+        trainerSummaryRepository.save(trainerSummary);
         return trainerSummary;
     }
 
@@ -100,7 +112,9 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
         workload.setDuration(request.getTrainingDuration());
 
         LOG.info("CorrelationId {}: Saving trainer workload for trainer: {}", correlationId, request.getUsername());
-        repository.save(workload);
+        repository.saveAndFlush(workload);
+
+        calculateSummary(request.getUsername(), correlationId);
     }
 
     private void deleteWorkload(TrainerWorkloadRequest request, String correlationId) {
@@ -110,6 +124,6 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
         }
 
         LOG.info("CorrelationId {}: Deleting trainer workload for trainer: {}", correlationId, request.getUsername());
-        repository.deleteByUsername(request.getUsername());
+        repository.deleteAllByUsername(request.getUsername());
     }
 }

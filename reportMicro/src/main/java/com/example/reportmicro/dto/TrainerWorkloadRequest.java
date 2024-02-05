@@ -33,5 +33,4 @@ public class TrainerWorkloadRequest {
     @NotBlank
     private String actionType;
 
-
 }

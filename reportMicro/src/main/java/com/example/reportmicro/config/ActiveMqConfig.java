@@ -71,4 +71,12 @@ public class ActiveMqConfig {
         template.setMessageConverter(jacksonJmsMessageConverter());
         return template;
     }
+
+    public Environment getEnv() {
+        return env;
+    }
+
+    public void setEnv(Environment env) {
+        this.env = env;
+    }
 }

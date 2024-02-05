@@ -2,6 +2,8 @@ package com.example.gymhibernatetask.config;
 
 import com.example.gymhibernatetask.dto.TrainerSummary;
 import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,8 @@ import org.springframework.jms.support.converter.MessageType;
 import java.util.HashMap;
 import java.util.Map;
 
+@Setter
+@Getter
 @Configuration
 public class ActiveMqConfig {
 
@@ -49,13 +53,5 @@ public class ActiveMqConfig {
         typeIdMappings.put("java.lang.String", String.class);
         converter.setTypeIdMappings(typeIdMappings);
         return converter;
-    }
-
-    public Environment getEnv() {
-        return env;
-    }
-
-    public void setEnv(Environment env) {
-        this.env = env;
     }
 }

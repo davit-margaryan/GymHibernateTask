@@ -16,11 +16,6 @@ spring:
     broker-url: tcp://localhost:61616
     user: admin
     password: admin
-
-
-#eureka:
-#  client:
-#    serviceUrl:
-#      defaultZone: http://localhost:8761/eureka/ # Replace with the actual Eureka server URL
-#    register-with-eureka: true # If this property is true, it will automatically register to eureka upon startup
-#    fetch-registry: true # If this property is true, it will automatically fetch eureka registry upon startup
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/reportdatabase

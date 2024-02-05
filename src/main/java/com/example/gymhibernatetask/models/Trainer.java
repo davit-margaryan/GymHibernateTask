@@ -31,4 +31,13 @@ public class Trainer {
     @ManyToOne
     @JoinColumn(name = "specialization", nullable = false)
     private TrainingType specialization;
+
+    @Override
+    public String toString() {
+        return "Trainer{" +
+                "id=" + id +
+                "user=" + user +
+                "specialization=" + specialization +
+                "}";
+    }
 }

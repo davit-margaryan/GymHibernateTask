@@ -71,10 +71,15 @@ public class TrainingServiceImpl implements TrainingService {
         trainingRepository.save(training);
         logger.info("Training created successfully.");
 
+        return getTrainerWorkloadRequest(requestDto, trainer);
+    }
+
+    private static TrainerWorkloadRequest getTrainerWorkloadRequest(CreateTrainingRequestDto requestDto, Trainer trainer) {
         TrainerWorkloadRequest trainerWorkload = new TrainerWorkloadRequest();
         trainerWorkload.setTrainingDate(requestDto.getDate());
         trainerWorkload.setActive(true);
         trainerWorkload.setActionType("ADD");
+        trainerWorkload.setTrainingDuration(requestDto.getDuration());
         trainerWorkload.setUsername(requestDto.getTrainerUsername());
         trainerWorkload.setFirstName(trainer.getUser().getFirstName());
         trainerWorkload.setLastName(trainer.getUser().getLastName());

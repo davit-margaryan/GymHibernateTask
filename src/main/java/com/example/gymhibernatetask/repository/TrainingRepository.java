@@ -4,8 +4,10 @@ import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.Training;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -39,5 +41,4 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
             @Param("traineeName") String traineeName,
             @Param("trainingType") String trainingType
     );
-
 }
