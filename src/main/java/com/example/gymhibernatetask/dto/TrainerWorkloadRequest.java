@@ -22,6 +22,9 @@ public class TrainerWorkloadRequest {
     @NotBlank
     private String lastName;
 
+    @NotBlank
+    private String traineeUsername;
+
     private boolean isActive;
 
     @NotNull

@@ -1,5 +1,6 @@
 package com.example.gymhibernatetask.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,8 +33,9 @@ public class Training {
     @JoinColumn(name = "trainer_id")
     private Trainer trainer;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "trainee_id")
+    @JsonBackReference
     private Trainee trainee;
 
     @ManyToOne

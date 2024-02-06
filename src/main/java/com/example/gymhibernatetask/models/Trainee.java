@@ -29,7 +29,7 @@ public class Trainee {
     @NotBlank
     private String address;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     @JsonManagedReference
     private User user;
@@ -44,6 +44,7 @@ public class Trainee {
 
 
     @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<Training> trainings;
 
     @Override

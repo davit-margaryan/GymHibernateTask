@@ -51,29 +51,27 @@ public class TraineeController {
         if (traineeByUserUsername.isEmpty()) {
             throw new RuntimeException("Trainee not found");
         }
-        List<Trainer> trainers = traineeByUserUsername.get().getTrainers();
-        if (trainers != null) {
-            for (Trainer trainer : trainers) {
-                TrainerWorkloadRequest trainerWorkload = new TrainerWorkloadRequest();
-                trainerWorkload.setUsername(trainer.getUser().getUsername());
-                trainerWorkload.setActionType("DELETE");
-                jmsTemplate.convertAndSend(
-                        "manageTrainerWorkload.queue",
-                        trainerWorkload,
-                        new MessagePostProcessor() {
-                            @Override
-                            public Message postProcessMessage(@NonNull Message message) throws JMSException {
-                                message.setStringProperty("correlationId", String.valueOf(correlationId));
-                                return message;
-                            }
-                        });
+        TrainerWorkloadRequest trainerWorkload = new TrainerWorkloadRequest();
+        trainerWorkload.setTraineeUsername(traineeByUserUsername.get().getUser().getUsername());
+        trainerWorkload.setActionType("DELETE");
+        jmsTemplate.convertAndSend(
+                "manageTrainerWorkload.queue",
+                trainerWorkload,
+                new MessagePostProcessor() {
+                    @Override
+                    public Message postProcessMessage(@NonNull Message message) throws JMSException {
+                        message.setStringProperty("correlationId", String.valueOf(correlationId));
+                        return message;
+                    }
+                });
 
-            }
-        }
+
         traineeService.deleteTrainee(deleteUsername);
         transactionLogger.logTransactionSuccess("Trainee deleted successfully", correlationId, deleteUsername);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().
+
+                build();
     }
 
     @GetMapping("/{searchUsername}")

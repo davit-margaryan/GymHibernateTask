@@ -13,6 +13,8 @@ import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.impl.TraineeServiceImpl;
 import com.example.gymhibernatetask.util.UtilService;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -52,6 +54,9 @@ class TraineeServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
+    private EntityManager entityManager;
+
+    @Mock
     private MeterRegistry meterRegistry;
 
     @Spy
@@ -65,16 +70,29 @@ class TraineeServiceImplTest {
 
     @Test
     void deleteTrainee_whenTraineeExists() {
-        String username = "testUser";
-        User user = mock(User.class);
-        Trainee trainee = mock(Trainee.class);
+        String deleteUsername = "existingUser";
+        Long userId = 1L;
+        Long traineeId = 1L;
 
-        when(trainee.getUser()).thenReturn(user);
-        when(traineeRepository.getTraineeByUserUsername(username)).thenReturn(Optional.of(trainee));
+        Trainee mockTrainee = mock(Trainee.class);
+        User mockUser = mock(User.class);
 
-        traineeService.deleteTrainee(username);
+        when(mockUser.getId()).thenReturn(userId);
+        when(mockTrainee.getUser()).thenReturn(mockUser);
+        when(mockTrainee.getId()).thenReturn(traineeId);
 
-        verify(userRepository, times(1)).delete(user);
+        when(traineeRepository.getTraineeByUserUsername(deleteUsername)).thenReturn(Optional.of(mockTrainee));
+
+        // New additions
+        Query mockQuery = mock(Query.class);
+        when(entityManager.createNativeQuery(anyString())).thenReturn(mockQuery);
+        when(mockQuery.setParameter(anyString(), anyLong())).thenReturn(mockQuery);
+
+        traineeService.deleteTrainee(deleteUsername);
+
+        verify(traineeRepository, times(1)).getTraineeByUserUsername(deleteUsername);
+        verify(mockQuery, times(3)).setParameter("traineeId", traineeId);
+        verify(mockQuery, times(4)).executeUpdate();
     }
 
     @Test

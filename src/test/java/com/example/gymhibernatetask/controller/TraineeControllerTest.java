@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jms.core.JmsTemplate;
 
 import java.util.*;
 
@@ -31,6 +32,9 @@ class TraineeControllerTest {
 
     @Mock
     private TraineeService traineeService;
+
+    @Mock
+    private JmsTemplate jmsTemplate;
 
     @Mock
     private TraineeRepository traineeRepository;

@@ -83,6 +83,7 @@ public class TrainingServiceImpl implements TrainingService {
         trainerWorkload.setUsername(requestDto.getTrainerUsername());
         trainerWorkload.setFirstName(trainer.getUser().getFirstName());
         trainerWorkload.setLastName(trainer.getUser().getLastName());
+        trainerWorkload.setTraineeUsername(requestDto.getTraineeUsername());
 
         return trainerWorkload;
     }

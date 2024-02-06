@@ -41,4 +41,8 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
             @Param("traineeName") String traineeName,
             @Param("trainingType") String trainingType
     );
+
+    List<Training> findAllByTraineeId(Long id);
+
+    void deleteByTraineeId(Long id);
 }

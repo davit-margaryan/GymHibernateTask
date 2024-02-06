@@ -110,6 +110,7 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
         workload.setActive(request.isActive());
         workload.setDate(request.getTrainingDate());
         workload.setDuration(request.getTrainingDuration());
+        workload.setTraineeUsername(request.getTraineeUsername());
 
         LOG.info("CorrelationId {}: Saving trainer workload for trainer: {}", correlationId, request.getUsername());
         repository.saveAndFlush(workload);
@@ -119,11 +120,11 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
 
     private void deleteWorkload(TrainerWorkloadRequest request, String correlationId) {
 
-        if (!repository.existsByUsername(request.getUsername())) {
-            LOG.error("CorrelationId {}: Trainer {} doesn't exist.", correlationId, request.getUsername());
+        if (!repository.existsByTraineeUsername(request.getTraineeUsername())) {
+            LOG.error("CorrelationId {}: Trainer workload with Trainee username {} doesn't exist.", correlationId, request.getTraineeUsername());
         }
 
-        LOG.info("CorrelationId {}: Deleting trainer workload for trainer: {}", correlationId, request.getUsername());
-        repository.deleteAllByUsername(request.getUsername());
+        LOG.info("CorrelationId {}: Deleting trainer workload for Trainee Username: {}", correlationId, request.getTraineeUsername());
+        repository.deleteAllByTraineeUsername(request.getTraineeUsername());
     }
 }

@@ -21,27 +21,27 @@ public class TrainerWorkloadRequestTest {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
-    private TrainerWorkloadRequest createTrainerWorkloadRequest(String username, String firstName, String lastName,
+    private TrainerWorkloadRequest createTrainerWorkloadRequest(String username, String firstName, String lastName, String traineeUsername,
                                                                 boolean isActive, Date trainingDate,
                                                                 Number trainingDuration, String actionType) {
-        return new TrainerWorkloadRequest(username, firstName, lastName, isActive, trainingDate,
+        return new TrainerWorkloadRequest(username, firstName, lastName, traineeUsername, isActive, trainingDate,
                 trainingDuration, actionType);
     }
 
     @Test
     public void testValidationFailsWhenFieldsAreInvalid() {
         TrainerWorkloadRequest request = createTrainerWorkloadRequest("", "", "",
-                true, null, null, "");
+                "", true, null, null, "");
 
         Set<ConstraintViolation<TrainerWorkloadRequest>> violations = validator.validate(request);
 
-        assertEquals(6, violations.size(), "Expected six violations due to invalid fields");
+        assertEquals(7, violations.size(), "Expected seven violations due to invalid fields");
     }
 
     @Test
     public void testValidationSucceedsWithValidFields() {
         TrainerWorkloadRequest request = createTrainerWorkloadRequest("username", "First", "Last",
-                true, new Date(), 60, "Action");
+                "Trainee", true, new Date(), 60, "Action");
 
         Set<ConstraintViolation<TrainerWorkloadRequest>> violations = validator.validate(request);
 

@@ -12,6 +12,7 @@ import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.repository.UserRepository;
 import com.example.gymhibernatetask.service.TraineeService;
 import com.example.gymhibernatetask.util.UtilService;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,18 +32,20 @@ public class TraineeServiceImpl implements TraineeService {
     private final UtilService utilService;
     private final UserRepository userRepository;
     private final TrainingRepository trainingRepository;
+    private final EntityManager entityManager;
     private final TrainerRepository trainerRepository;
 
     @Autowired
     public TraineeServiceImpl(
             TraineeRepository traineeRepository,
             UtilService utilService,
-            UserRepository userRepository, TrainingRepository trainingRepository,
+            UserRepository userRepository, TrainingRepository trainingRepository, EntityManager entityManager,
             TrainerRepository trainerRepository) {
         this.traineeRepository = traineeRepository;
         this.utilService = utilService;
         this.userRepository = userRepository;
         this.trainingRepository = trainingRepository;
+        this.entityManager = entityManager;
         this.trainerRepository = trainerRepository;
     }
 
@@ -51,14 +54,38 @@ public class TraineeServiceImpl implements TraineeService {
     public void deleteTrainee(String deleteUsername) {
         logger.info("Deleting trainee with username: {}", deleteUsername);
 
-        Optional<Trainee> traineeByUserUsername = traineeRepository.getTraineeByUserUsername(deleteUsername);
-        if (traineeByUserUsername.isPresent()) {
-            userRepository.delete(traineeByUserUsername.get().getUser());
-            logger.info("Trainee deleted successfully. Username: {}", deleteUsername);
-        } else {
+        Optional<Trainee> traineeOptional = traineeRepository.getTraineeByUserUsername(deleteUsername);
+
+        if (traineeOptional.isEmpty()) {
             logger.warn("Trainee not found for deletion. Username: {}", deleteUsername);
             throw new NotFoundException("Trainee not found");
         }
+
+        Trainee trainee = traineeOptional.get();
+        Long traineeId = trainee.getId();
+        Long userId = trainee.getUser().getId();
+
+        String deleteFromTraineeTrainer = "DELETE FROM trainee_trainer WHERE trainee_id = :traineeId";
+        entityManager.createNativeQuery(deleteFromTraineeTrainer)
+                .setParameter("traineeId", traineeId)
+                .executeUpdate();
+
+        String deleteFromTraining = "DELETE FROM Training WHERE trainee_id = :traineeId";
+        entityManager.createNativeQuery(deleteFromTraining)
+                .setParameter("traineeId", traineeId)
+                .executeUpdate();
+
+        String deleteFromTrainee = "DELETE FROM Trainee WHERE id = :traineeId";
+        entityManager.createNativeQuery(deleteFromTrainee)
+                .setParameter("traineeId", traineeId)
+                .executeUpdate();
+
+        String deleteFromUser = "DELETE FROM User WHERE id = :userId";
+        entityManager.createNativeQuery(deleteFromUser)
+                .setParameter("userId", userId)
+                .executeUpdate();
+
+        logger.info("Trainee deleted successfully. Username: {}", deleteUsername);
     }
 
     @Override

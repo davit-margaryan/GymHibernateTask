@@ -40,7 +40,7 @@ public class User implements UserDetails {
 
     private boolean isActive;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user")
     private Trainee trainee;
 
 

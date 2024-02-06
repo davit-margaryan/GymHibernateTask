@@ -9,7 +9,9 @@ public interface TrainerWorkloadRepository extends JpaRepository<TrainerWorkload
 
     boolean existsByUsername(String username);
 
+    boolean existsByTraineeUsername(String username);
+
     List<TrainerWorkload> getAllByUsername(String username);
 
-    void deleteAllByUsername(String username);
+    void deleteAllByTraineeUsername(String username);
 }

@@ -56,12 +56,12 @@ public class TrainerWorkloadServiceTest {
     @Test
     public void manageTrainerWorkload_Delete_Test() {
         when(request.getActionType()).thenReturn("DELETE");
-        when(request.getUsername()).thenReturn("anyString");
-        when(repository.existsByUsername(anyString())).thenReturn(true);
+        when(request.getTraineeUsername()).thenReturn("anyString");
+        when(repository.existsByTraineeUsername(anyString())).thenReturn(true);
 
         service.manageTrainerWorkload(request, "anyString");
 
-        verify(repository, times(1)).deleteAllByUsername(anyString());
+        verify(repository, times(1)).deleteAllByTraineeUsername(anyString());
     }
 
     @Test
