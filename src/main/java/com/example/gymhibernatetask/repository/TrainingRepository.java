@@ -4,13 +4,13 @@ import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.Training;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface TrainingRepository extends JpaRepository<Training, Long> {
 
@@ -19,7 +19,7 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
             "AND (:periodFrom IS NULL OR t.date >= :periodFrom) " +
             "AND (:periodTo IS NULL OR t.date <= :periodTo) " +
             "AND (:trainerName IS NULL OR t.trainer.user.firstName = :trainerName) " +
-            "AND (:trainingType IS NULL OR t.trainingType = :trainingType)")
+            "AND (:trainingType IS NULL OR t.trainingType.trainingTypeName = :trainingType)")
     List<Training> findByTraineeAndCriteria(
             @Param("trainee") Trainee trainee,
             @Param("periodFrom") Date periodFrom,
@@ -45,4 +45,6 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
     List<Training> findAllByTraineeId(Long id);
 
     void deleteByTraineeId(Long id);
+
+    Optional<Training> findFirstByTraineeUserUsernameAndTrainerUserUsernameOrderByIdDesc(String traineeUsername, String trainerUsername);
 }

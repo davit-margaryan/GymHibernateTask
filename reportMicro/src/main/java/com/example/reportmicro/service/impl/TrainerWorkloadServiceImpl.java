@@ -1,6 +1,8 @@
 package com.example.reportmicro.service.impl;
 
 import com.example.reportmicro.dto.TrainerWorkloadRequest;
+import com.example.reportmicro.exception.InvalidInputException;
+import com.example.reportmicro.exception.NotFoundException;
 import com.example.reportmicro.model.TrainerSummary;
 import com.example.reportmicro.model.TrainerWorkload;
 import com.example.reportmicro.repo.TrainerSummaryRepository;
@@ -10,11 +12,13 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@Primary
 @Transactional
 public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
 
@@ -51,15 +55,19 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
 
     @Override
     public TrainerSummary calculateSummary(String trainerUsername, String correlationId) {
+        if (trainerUsername == null || trainerUsername.trim().isEmpty()) {
+            throw new InvalidInputException("Username is not valid");
+        }
         LOG.info("CorrelationId {}: Calculating summary for username: {}", correlationId, trainerUsername);
         List<TrainerWorkload> trainerWorkloads = repository.getAllByUsername(trainerUsername);
 
-        if (trainerWorkloads.isEmpty()) {
-            return null;
-        }
         LOG.info("CorrelationId {}: Found {} workloads for trainer: {}", correlationId, trainerWorkloads.size(), trainerUsername);
 
         Optional<TrainerSummary> optionalTrainerSummary = trainerSummaryRepository.findByUsername(trainerUsername);
+
+        if (trainerWorkloads.isEmpty() && optionalTrainerSummary.isEmpty()) {
+            throw new NotFoundException("Trainer Not Found");
+        }
 
         TrainerSummary trainerSummary;
         trainerSummary = optionalTrainerSummary.orElseGet(TrainerSummary::new);

@@ -1,6 +1,5 @@
-package config;
+package com.example.reportmicro.config;
 
-import com.example.reportmicro.config.ActiveMqConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;

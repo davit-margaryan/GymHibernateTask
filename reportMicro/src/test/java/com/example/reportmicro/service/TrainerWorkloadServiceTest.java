@@ -6,11 +6,11 @@ import com.example.reportmicro.model.TrainerWorkload;
 import com.example.reportmicro.repo.TrainerSummaryRepository;
 import com.example.reportmicro.repo.TrainerWorkloadRepository;
 import com.example.reportmicro.service.impl.TrainerWorkloadServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.Date;

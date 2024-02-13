@@ -20,11 +20,11 @@ public interface TraineeService {
 
     void changeActiveStatus(String username, boolean activeStatus);
 
-    public List<TrainerListResponseDto> updateTraineeTrainers(String username, List<Trainer> trainers);
+    List<TrainerListResponseDto> updateTraineeTrainers(String username, List<Trainer> trainers);
 
-    public List<TrainingDto> getTraineeTrainingsList(String traineeUsername,
-                                                     Date periodFrom, Date periodTo,
-                                                     String trainerName, TrainingType trainingType);
+    List<TrainingDto> getTraineeTrainingsList(String traineeUsername,
+                                              Date periodFrom, Date periodTo,
+                                              String trainerName, TrainingType trainingType);
 
-    public List<TrainerListResponseDto> getAvailableTrainersForTrainee(String traineeUsername);
+    List<TrainerListResponseDto> getAvailableTrainersForTrainee(String traineeUsername);
 }

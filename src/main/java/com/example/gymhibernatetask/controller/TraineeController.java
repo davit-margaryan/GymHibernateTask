@@ -65,13 +65,10 @@ public class TraineeController {
                     }
                 });
 
-
         traineeService.deleteTrainee(deleteUsername);
         transactionLogger.logTransactionSuccess("Trainee deleted successfully", correlationId, deleteUsername);
 
-        return ResponseEntity.noContent().
-
-                build();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{searchUsername}")

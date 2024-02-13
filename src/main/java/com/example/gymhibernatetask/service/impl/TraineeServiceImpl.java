@@ -148,8 +148,13 @@ public class TraineeServiceImpl implements TraineeService {
                                                      String trainerFirstName, TrainingType trainingType) {
         Trainee trainee = getTraineeByUsername(traineeUsername);
 
+        String trainingTypeName = "";
+        if (trainingType != null) {
+            trainingTypeName = trainingType.getTrainingTypeName();
+        }
+
         List<Training> trainings = trainingRepository.findByTraineeAndCriteria(trainee,
-                periodFrom, periodTo, trainerFirstName, trainingType.getTrainingTypeName());
+                periodFrom, periodTo, trainerFirstName, trainingTypeName);
 
         logger.info("Trainee trainings fetched successfully. Username: {}", traineeUsername);
 
