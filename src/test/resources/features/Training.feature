@@ -1,0 +1,12 @@
+@Training
+Feature: Create Training
+
+  Scenario: Successfully creating a new training
+    Given an authenticated request
+    When create a training
+    Then the response status should be created
+
+  Scenario: Fail to create a new training
+    Given an authenticated request
+    When try to create a training with a non-existent username
+    Then the response status should be 400

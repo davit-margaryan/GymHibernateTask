@@ -2,12 +2,16 @@ server:
   port: 8083
 
 spring:
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
   application:
     name: main-microservice
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mysql://localhost:3306/gymdb
+    url: jdbc:mysql://localhost:3306/testGym
     username: root
     password: root
   jpa:
@@ -38,6 +42,3 @@ application:
       expiration: 86400000
       refresh-token:
         expiration: 604800000
-
-
-
