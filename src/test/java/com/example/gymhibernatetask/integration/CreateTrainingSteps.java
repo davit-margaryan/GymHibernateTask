@@ -93,7 +93,7 @@ public class CreateTrainingSteps {
             Enumeration<?> enumeration = browser.getEnumeration();
             while (enumeration.hasMoreElements()) {
                 Message message = (Message) enumeration.nextElement();
-                jmsTemplate.receiveSelected("manageTrainerWorkload.queue","JMSMessageID = '" + message.getJMSMessageID() + "'" );
+                jmsTemplate.receiveSelected("manageTrainerWorkload.queue", "JMSMessageID = '" + message.getJMSMessageID() + "'");
             }
             return null;
         });
@@ -118,9 +118,9 @@ public class CreateTrainingSteps {
         requestDto.setDuration(60);
 
         mockMvc.perform(post("/trainings")
-                        .header("Authorization", this.jwt)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)));
+                .header("Authorization", this.jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)));
     }
 
     @Then("the response status should be created")

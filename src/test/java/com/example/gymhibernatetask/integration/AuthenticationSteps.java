@@ -34,7 +34,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import javax.security.auth.login.AccountLockedException;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Optional;
@@ -87,7 +86,7 @@ public class AuthenticationSteps {
 
 
     @Before
-    public void startTransaction(){
+    public void startTransaction() {
         status = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
 
