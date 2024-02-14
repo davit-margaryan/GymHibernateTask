@@ -5,6 +5,7 @@ import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.repository.TraineeRepository;
+import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.service.TraineeService;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import io.swagger.annotations.Api;
@@ -18,10 +19,7 @@ import org.springframework.jms.core.MessagePostProcessor;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/trainees")
@@ -32,14 +30,16 @@ public class TraineeController {
     private final TransactionLogger transactionLogger;
     private final TraineeService traineeService;
     private final TraineeRepository traineeRepository;
+    private final TrainerRepository trainerRepository;
     private final JmsTemplate jmsTemplate;
 
     public TraineeController(TransactionLogger transactionLogger,
                              TraineeService traineeService,
-                             TraineeRepository traineeRepository, JmsTemplate jmsTemplate) {
+                             TraineeRepository traineeRepository, TrainerRepository trainerRepository, JmsTemplate jmsTemplate) {
         this.transactionLogger = transactionLogger;
         this.traineeService = traineeService;
         this.traineeRepository = traineeRepository;
+        this.trainerRepository = trainerRepository;
         this.jmsTemplate = jmsTemplate;
     }
 
@@ -116,8 +116,14 @@ public class TraineeController {
     }
 
     @PutMapping("/update-trainers")
-    public ResponseEntity<List<TrainerListResponseDto>> updateTraineeTrainers(@RequestParam String username, @RequestBody List<Trainer> trainers) {
+    public ResponseEntity<List<TrainerListResponseDto>> updateTraineeTrainers(@RequestParam String username, @RequestBody List<String> trainersUsername) {
         UUID transactionId = transactionLogger.logTransactionRequest(TRANSACTION_INFO);
+        List<Trainer> trainers = new ArrayList<>();
+
+        for (String trainerUsername : trainersUsername) {
+            Optional<Trainer> trainerByUserUsername = trainerRepository.getTrainerByUserUsername(trainerUsername);
+            trainerByUserUsername.ifPresent(trainers::add);
+        }
 
         List<TrainerListResponseDto> updatedTrainers = traineeService.updateTraineeTrainers(username, trainers);
         transactionLogger.logTransactionSuccess("Trainee profile updated Trainers successfully", transactionId, username);

@@ -148,7 +148,7 @@ public class TraineeServiceImpl implements TraineeService {
                                                      String trainerFirstName, TrainingType trainingType) {
         Trainee trainee = getTraineeByUsername(traineeUsername);
 
-        String trainingTypeName = "";
+        String trainingTypeName = null;
         if (trainingType != null) {
             trainingTypeName = trainingType.getTrainingTypeName();
         }

@@ -24,11 +24,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.security.auth.login.AccountLockedException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -62,6 +64,9 @@ public class CreateTrainingSteps {
     @Autowired
     private JmsTemplate jmsTemplate;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
     private Date futureDate;
 
     private CreateTrainingRequestDto requestDto;
@@ -70,8 +75,8 @@ public class CreateTrainingSteps {
 
     private TransactionStatus status;
 
-    @Autowired
-    private PlatformTransactionManager transactionManager;
+    private ResultActions resultActions;
+
 
     @Before
     public void authenticateUser() throws AccountLockedException {
@@ -137,6 +142,7 @@ public class CreateTrainingSteps {
         TrainerWorkloadRequest trainerWorkloadRequest
                 = (TrainerWorkloadRequest) jmsTemplate.receiveAndConvert("manageTrainerWorkload.queue");
 
+        assert trainerWorkloadRequest != null;
         assertEquals(requestDto.getTraineeUsername(), trainerWorkloadRequest.getTraineeUsername());
     }
 
@@ -153,15 +159,17 @@ public class CreateTrainingSteps {
 
         requestDto.setDuration(60);
 
-        mockMvc.perform(post("/trainings")
+        resultActions = mockMvc.perform(post("/trainings")
                         .header("Authorization", this.jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest());
     }
 
     @Then("the response status should be 400")
-    public void responseStatusShouldBe400() {
+    public void responseStatusShouldBe404() throws UnsupportedEncodingException {
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
 
+        assertTrue(responseBody.contains("Trainee or Trainer does not exists"));
     }
 }

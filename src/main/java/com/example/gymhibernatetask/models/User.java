@@ -1,6 +1,8 @@
 package com.example.gymhibernatetask.models;
 
 import com.example.gymhibernatetask.token.Token;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -19,6 +21,9 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class User implements UserDetails {
 
     @Id

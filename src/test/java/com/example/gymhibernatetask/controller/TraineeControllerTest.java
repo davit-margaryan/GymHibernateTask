@@ -9,6 +9,7 @@ import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
 import com.example.gymhibernatetask.models.User;
 import com.example.gymhibernatetask.repository.TraineeRepository;
+import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.service.TraineeService;
 import com.example.gymhibernatetask.util.TransactionLogger;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import org.springframework.jms.core.JmsTemplate;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +40,9 @@ class TraineeControllerTest {
 
     @Mock
     private TraineeRepository traineeRepository;
+
+    @Mock
+    private TrainerRepository trainerRepository;
 
     @InjectMocks
     private TraineeController traineeController;
@@ -119,14 +124,22 @@ class TraineeControllerTest {
     @Test
     void testUpdateTraineeTrainers() {
         String username = "testUser";
-        List<Trainer> trainers = Arrays.asList(mock(Trainer.class));
+        String trainerUsername1 = "trainer1";
+        String trainerUsername2 = "trainer2";
+        List<String> trainersUsernames = Arrays.asList(trainerUsername1, trainerUsername2);
+        List<Trainer> trainers = new ArrayList<>();
+        TrainerListResponseDto mockDto = mock(TrainerListResponseDto.class);
 
-        when(traineeService.updateTraineeTrainers(username, trainers)).thenReturn(Arrays.asList(mock(TrainerListResponseDto.class)));
+        when(trainerRepository.getTrainerByUserUsername(trainerUsername1)).thenReturn(Optional.of(new Trainer()));
+        when(trainerRepository.getTrainerByUserUsername(trainerUsername2)).thenReturn(Optional.of(new Trainer()));
 
-        ResponseEntity<List<TrainerListResponseDto>> response = traineeController.updateTraineeTrainers(username, trainers);
+        when(traineeService.updateTraineeTrainers(eq(username), anyList())).thenReturn(Collections.singletonList(mockDto));
 
-        verify(traineeService).updateTraineeTrainers(username, trainers);
-        assert response.getStatusCode().equals(HttpStatus.OK);
+        ResponseEntity<List<TrainerListResponseDto>> response = traineeController.updateTraineeTrainers(username, trainersUsernames);
+
+        verify(trainerRepository).getTrainerByUserUsername(trainerUsername1);
+        verify(trainerRepository).getTrainerByUserUsername(trainerUsername2);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
 

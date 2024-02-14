@@ -103,8 +103,13 @@ public class TrainerServiceImpl implements TrainerService {
 
         Trainer trainer = getTrainerByUsername(trainerUsername);
 
+        String trainingTypeName = null;
+        if (trainingType != null) {
+            trainingTypeName = trainingType.getTrainingTypeName();
+        }
+
         List<Training> trainings = trainingRepository.findByTrainerAndCriteria(trainer,
-                periodFrom, periodTo, traineeName, trainingType.getTrainingTypeName());
+                periodFrom, periodTo, traineeName, trainingTypeName);
 
         logger.info("Trainer trainings fetched successfully. Username: {}", trainerUsername);
 

@@ -32,7 +32,7 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
             "AND (:periodFrom IS NULL OR t.date >= :periodFrom) " +
             "AND (:periodTo IS NULL OR t.date <= :periodTo) " +
             "AND (:traineeName IS NULL OR t.trainee.user.firstName = :traineeName) " +
-            "AND (:trainingType IS NULL OR t.trainingType = :trainingType)")
+            "AND (:trainingType IS NULL OR t.trainingType.trainingTypeName = :trainingType)")
     List<Training> findByTrainerAndCriteria(
             @Param("trainer") Trainer trainer,
             @Param("periodFrom") Date periodFrom,
@@ -40,10 +40,6 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
             @Param("traineeName") String traineeName,
             @Param("trainingType") String trainingType
     );
-
-    List<Training> findAllByTraineeId(Long id);
-
-    void deleteByTraineeId(Long id);
 
     Optional<Training> findFirstByTraineeUserUsernameAndTrainerUserUsernameOrderByIdDesc(String traineeUsername, String trainerUsername);
 }

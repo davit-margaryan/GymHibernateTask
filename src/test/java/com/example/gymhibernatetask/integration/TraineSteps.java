@@ -7,7 +7,6 @@ import com.example.gymhibernatetask.auth.AuthenticationService;
 import com.example.gymhibernatetask.dto.*;
 import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.repository.TraineeRepository;
-import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.token.Token;
 import com.example.gymhibernatetask.token.TokenRepository;
 import com.example.gymhibernatetask.token.TokenType;
@@ -23,6 +22,7 @@ import org.apache.activemq.command.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.annotation.DirtiesContext;
@@ -32,17 +32,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.security.auth.login.AccountLockedException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,8 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = GymHibernateTaskApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class TraineeSteps {
-
+public class TraineSteps {
 
     @Autowired
     private MockMvc mockMvc;
@@ -70,12 +65,6 @@ public class TraineeSteps {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private TrainingRepository trainingRepository;
-
-    @Autowired
-    private TransactionTemplate transactionTemplate;
-
-    @Autowired
     private PlatformTransactionManager transactionManager;
 
     @Autowired
@@ -83,14 +72,9 @@ public class TraineeSteps {
 
     private UpdateTraineeRequestDto updateRequestDto;
 
-    private Date futureDate;
-
     private MvcResult result;
 
     private ResultActions resultActions;
-
-
-    private CreateTrainingRequestDto requestDto;
 
     private String jwt;
 
@@ -124,7 +108,7 @@ public class TraineeSteps {
     }
 
     @Given("Authentication to request")
-    public void anAdminAuthenticatedRequestIsMade() throws Exception {
+    public void anAuthenticatedRequestIsMadeForFetchingTrainees() throws Exception {
         this.jwt = "Bearer " + jwt;
     }
 
@@ -145,6 +129,7 @@ public class TraineeSteps {
     public void responseStatusShouldBe204() {
         TrainerWorkloadRequest trainerWorkloadRequest = (TrainerWorkloadRequest) jmsTemplate.receiveAndConvert("manageTrainerWorkload.queue");
 
+        assert trainerWorkloadRequest != null;
         assertEquals("trainee3", trainerWorkloadRequest.getTraineeUsername());
     }
 
@@ -177,11 +162,9 @@ public class TraineeSteps {
                 .andReturn();
     }
 
-    @Then("an error message is returned")
-    public void errorMessageIsReturned() throws UnsupportedEncodingException {
-        String response = result.getResponse().getContentAsString();
-
-        assertTrue(response.contains("Trainee not found"));
+    @Then("should receive an error message that trainee not found")
+    public void errorThrew() {
+        assertEquals(result.getResponse().getStatus(), HttpStatus.NOT_FOUND.value());
     }
 
 
@@ -231,13 +214,6 @@ public class TraineeSteps {
                 .andReturn();
     }
 
-    @Then("an error should occur")
-    public void errorOccurs() throws UnsupportedEncodingException {
-        String response = result.getResponse().getContentAsString();
-
-        assertTrue(response.contains("Trainee not found"));
-    }
-
     @When("request for a list of trainings")
     public void requestForListOfTrainings() throws Exception {
         String traineeUsername = "trainee2";
@@ -262,5 +238,91 @@ public class TraineeSteps {
             assertTrue(trainingDate.after(Date.from(LocalDate.of(2024, 2, 1).atStartOfDay(ZoneId.systemDefault()).toInstant())));
             assertTrue(trainingDate.before(Date.from(LocalDate.of(2024, 6, 1).atStartOfDay(ZoneId.systemDefault()).toInstant())));
         }
+    }
+
+    @When("request for a list of available trainers")
+    public void requestForListOfAvailableTrainers() throws Exception {
+        String traineeUsername = "trainee3";
+
+        resultActions = mockMvc.perform(get("/trainees/{traineeUsername}/available-trainers", traineeUsername)
+                        .header("Authorization", this.jwt))
+                .andExpect(status().isOk());
+    }
+
+    @Then("should get a list of available trainers")
+    public void getListOfAvailableTrainers() throws Exception {
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        List<TrainerListResponseDto> trainers = objectMapper.readValue(responseBody, new TypeReference<>() {
+        });
+
+        assertFalse(trainers.isEmpty());
+    }
+
+    @When("request for a list of available trainers for a non-existent trainee")
+    public void requestForListOfAvailableTrainersForNonExistentTrainee() throws Exception {
+        String traineeUsername = "nonExistentTraineeUsername";
+
+        result = mockMvc.perform(get("/trainees/{traineeUsername}/available-trainers", traineeUsername)
+                        .header("Authorization", this.jwt))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @When("request to update my list of trainers")
+    public void requestToUpdateListOfTrainers() throws Exception {
+        String traineeUsername = "trainee4";
+
+        List<String> trainerUsernames = Arrays.asList("trainer1", "trainer2");
+
+        resultActions = mockMvc.perform(put("/trainees/update-trainers")
+                        .header("Authorization", this.jwt)
+                        .param("username", traineeUsername)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(trainerUsernames)))
+                .andExpect(status().isOk());
+    }
+
+    @Then("list of trainers should be updated")
+    public void checkListOfTrainersAreUpdated() throws Exception {
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        List<TrainerListResponseDto> updatedTrainers = objectMapper.readValue(responseBody, new TypeReference<List<TrainerListResponseDto>>() {
+        });
+
+        assertFalse(updatedTrainers.isEmpty());
+        assertEquals(2, updatedTrainers.size());
+    }
+
+    @When("request to update trainers for non-existing trainee")
+    public void requestToUpdateTrainersForNonExistingTrainee() throws Exception {
+        String nonExistTraineeUsername = "nonExistTrainee";
+
+        List<String> trainerUsernames = Arrays.asList("trainer1", "trainer2");
+
+        result = mockMvc.perform(put("/trainees/update-trainers")
+                        .header("Authorization", this.jwt)
+                        .param("username", nonExistTraineeUsername)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(trainerUsernames)))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @When("request to change the active status of my trainee profile")
+    public void requestToChangeActiveStatus() throws Exception {
+        String traineeUsername = "trainee1";
+        boolean newStatus = false;
+
+        resultActions = mockMvc.perform(patch("/trainees/change-active-status")
+                        .header("Authorization", this.jwt)
+                        .param("username", traineeUsername)
+                        .param("activeStatus", Boolean.toString(newStatus))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Then("the trainee active status should be successfully changed")
+    public void checkActiveStatusChanged() {
+        Optional<Trainee> traineeByUserUsername = traineeRepository.getTraineeByUserUsername("trainee1");
+        assertTrue(traineeByUserUsername.isPresent() && !traineeByUserUsername.get().getUser().isActive());
     }
 }
