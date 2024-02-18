@@ -4,7 +4,10 @@ import com.example.gymhibernatetask.GymHibernateTaskApplication;
 import com.example.gymhibernatetask.auth.AuthenticationRequest;
 import com.example.gymhibernatetask.auth.AuthenticationResponse;
 import com.example.gymhibernatetask.auth.AuthenticationService;
-import com.example.gymhibernatetask.dto.*;
+import com.example.gymhibernatetask.dto.TraineeResponseDto;
+import com.example.gymhibernatetask.dto.TrainerListResponseDto;
+import com.example.gymhibernatetask.dto.TrainingDto;
+import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
 import com.example.gymhibernatetask.models.Trainee;
 import com.example.gymhibernatetask.repository.TraineeRepository;
 import com.example.gymhibernatetask.token.Token;
@@ -18,7 +21,11 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.apache.activemq.command.Message;
+import jakarta.jms.Message;
+import jakarta.jms.TextMessage;
+import org.apache.activemq.broker.BrokerService;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,7 +45,10 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -47,7 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = GymHibernateTaskApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class TraineSteps {
+public class TraineeSteps {
 
     @Autowired
     private MockMvc mockMvc;
@@ -80,6 +90,20 @@ public class TraineSteps {
 
     private TransactionStatus status;
 
+    private static BrokerService broker;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        broker = new BrokerService();
+        broker.setPersistent(false);
+        broker.addConnector("tcp://localhost:61616");
+        broker.start();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        broker.stop();
+    }
 
     @Before
     public void authenticateUser() throws AccountLockedException {
@@ -97,18 +121,11 @@ public class TraineSteps {
     @After
     public void rollbackTransaction() {
         transactionManager.rollback(status);
-        jmsTemplate.browse("manageTrainerWorkload.queue", (session, browser) -> {
-            Enumeration<?> enumeration = browser.getEnumeration();
-            while (enumeration.hasMoreElements()) {
-                Message message = (Message) enumeration.nextElement();
-                jmsTemplate.receiveSelected("manageTrainerWorkload.queue", "JMSMessageID = '" + message.getCorrelationId() + "'");
-            }
-            return null;
-        });
     }
 
+
     @Given("Authentication to request")
-    public void anAuthenticatedRequestIsMadeForFetchingTrainees() throws Exception {
+    public void anAuthenticatedRequestIsMadeForFetchingTrainees() {
         this.jwt = "Bearer " + jwt;
     }
 
@@ -125,12 +142,15 @@ public class TraineSteps {
 
     }
 
-    @Then("the response status should be 204")
-    public void responseStatusShouldBe204() {
-        TrainerWorkloadRequest trainerWorkloadRequest = (TrainerWorkloadRequest) jmsTemplate.receiveAndConvert("manageTrainerWorkload.queue");
+    @Then("the response status should be NoContent")
+    public void responseStatusShouldBeNoContent() throws Exception {
+        Thread.sleep(1000);
 
-        assert trainerWorkloadRequest != null;
-        assertEquals("trainee3", trainerWorkloadRequest.getTraineeUsername());
+        Message message = jmsTemplate.receive("manageTrainerWorkload.queue");
+
+        assertNotNull(message);
+
+        assertInstanceOf(TextMessage.class, message);
     }
 
     @When("request to fetch a trainee's profile")

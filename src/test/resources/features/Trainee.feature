@@ -5,7 +5,7 @@ Feature: Trainees Management
   Scenario: Successfully delete a trainee
     Given Authentication to request
     When request to delete a trainee's profile
-    Then the response status should be 204
+    Then the response status should be NoContent
 
   @SuccessfullyFetchedTraineesProfile
   Scenario: Fetch Trainee profile Successfully

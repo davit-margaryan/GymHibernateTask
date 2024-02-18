@@ -34,5 +34,23 @@ Feature: Trainers Management
   @FailToGetListOfTrainer'sTrainings
   Scenario: Get trainer training list for non-existing trainer
     Given authentication is made for fetching Trainers
-    When I request for training list of non-existing trainer
+    When request for training list of non-existing trainer
     Then should receive error message that trainer is not found
+
+  @SuccessfullyChangeActiveStatusOfTrainer
+  Scenario: Change active status of trainer
+    Given authentication is made for fetching Trainers
+    When request to change the active status of trainer with valid username
+    Then the trainer active status should be successfully changed
+
+  @FailTOChangeActiveStatusOfTrainer
+  Scenario: Try to change active status of a non-existing trainer
+    Given authentication is made for fetching Trainers
+    When request to change the active status of trainer with invalid username
+    Then should receive error message that trainer is not found
+
+  @SuccessfullyChangeActiveStatusOfTrainer
+  Scenario: Get Trainer Summary Data
+    Given authentication is made for fetching Trainers
+    When a get request for trainer summary is made
+    Then verify the queue has received the message

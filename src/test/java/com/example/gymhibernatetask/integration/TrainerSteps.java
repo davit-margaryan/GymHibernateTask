@@ -6,10 +6,10 @@ import com.example.gymhibernatetask.auth.AuthenticationResponse;
 import com.example.gymhibernatetask.auth.AuthenticationService;
 import com.example.gymhibernatetask.dto.TrainerResponseDto;
 import com.example.gymhibernatetask.dto.TrainingDto;
-import com.example.gymhibernatetask.dto.UpdateTraineeRequestDto;
 import com.example.gymhibernatetask.dto.UpdateTrainerRequestDto;
+import com.example.gymhibernatetask.models.Trainer;
 import com.example.gymhibernatetask.models.TrainingType;
-import com.example.gymhibernatetask.repository.TraineeRepository;
+import com.example.gymhibernatetask.repository.TrainerRepository;
 import com.example.gymhibernatetask.repository.TrainingTypeRepository;
 import com.example.gymhibernatetask.token.Token;
 import com.example.gymhibernatetask.token.TokenRepository;
@@ -21,7 +21,10 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.apache.activemq.command.Message;
+import jakarta.jms.Message;
+import org.apache.activemq.broker.BrokerService;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +32,6 @@ import org.springframework.http.MediaType;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -40,13 +42,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = GymHibernateTaskApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -64,7 +64,7 @@ public class TrainerSteps {
     private TokenRepository tokenRepository;
 
     @Autowired
-    private TraineeRepository traineeRepository;
+    private TrainerRepository trainerRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -78,10 +78,6 @@ public class TrainerSteps {
     @Autowired
     private TrainingTypeRepository trainingTypeRepository;
 
-    private UpdateTraineeRequestDto updateRequestDto;
-
-    private MvcResult result;
-
     private ResultActions resultActions;
 
     private String jwt;
@@ -90,6 +86,20 @@ public class TrainerSteps {
 
     private final static String API_URL = "/trainers/";
 
+    private static BrokerService broker;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        broker = new BrokerService();
+        broker.setPersistent(false);
+        broker.addConnector("tcp://localhost:61616");
+        broker.start();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        broker.stop();
+    }
 
     @Before
     public void authenticateUser() throws AccountLockedException {
@@ -107,14 +117,6 @@ public class TrainerSteps {
     @After
     public void rollbackTransaction() {
         transactionManager.rollback(status);
-        jmsTemplate.browse("manageTrainerWorkload.queue", (session, browser) -> {
-            Enumeration<?> enumeration = browser.getEnumeration();
-            while (enumeration.hasMoreElements()) {
-                Message message = (Message) enumeration.nextElement();
-                jmsTemplate.receiveSelected("manageTrainerWorkload.queue", "JMSMessageID = '" + message.getCorrelationId() + "'");
-            }
-            return null;
-        });
     }
 
     @Given("authentication is made for fetching Trainers")
@@ -219,12 +221,52 @@ public class TrainerSteps {
         }
     }
 
-    @When("I request for training list of non-existing trainer")
+    @When("request for training list of non-existing trainer")
     public void requestForTrainingListOfNonExistingTrainer() throws Exception {
         resultActions = mockMvc.perform(get("/trainers/nonExistTrainer/trainings")
                         .header("Authorization", this.jwt)
                         .param("periodFrom", LocalDate.of(2024, 2, 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                         .param("periodTo", LocalDate.of(2024, 6, 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
                 .andExpect((status().isNotFound()));
+    }
+
+    @When("request to change the active status of trainer with valid username")
+    public void requestToChangeActiveStatusOfTrainerWithValidUsername() throws Exception {
+        resultActions = mockMvc.perform(patch("/trainers/change-active-status")
+                        .header("Authorization", this.jwt)
+                        .param("username", "trainer5")
+                        .param("activeStatus", Boolean.toString(false)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Then("the trainer active status should be successfully changed")
+    public void checkTrainerActiveStatusChanged() {
+        Optional<Trainer> trainerByUserUsername = trainerRepository.getTrainerByUserUsername("trainer5");
+        assertTrue(trainerByUserUsername.isPresent() && !trainerByUserUsername.get().getUser().isActive());
+    }
+
+    @When("request to change the active status of trainer with invalid username")
+    public void requestToChangeActiveStatusOfTrainerWithInvalidUsername() throws Exception {
+        resultActions = mockMvc.perform(patch("/trainers/change-active-status")
+                        .header("Authorization", this.jwt)
+                        .param("username", "NonExistingTrainer")
+                        .param("activeStatus", Boolean.toString(true)))
+                .andExpect(status().isNotFound());
+    }
+
+    @When("a get request for trainer summary is made")
+    public void aGetRequestForTrainerSummaryIsMade() throws Exception {
+        this.resultActions = mockMvc.perform(get("/trainers/summary/trainer4")
+                .header("Authorization", this.jwt)
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
+    @Then("verify the queue has received the message")
+    public void aMessageHasBeenSentToTheQueue() throws InterruptedException {
+        Thread.sleep(1000);
+
+        Message message = jmsTemplate.receive("getTrainerSummary.queue");
+
+        assertNotNull(message);
     }
 }

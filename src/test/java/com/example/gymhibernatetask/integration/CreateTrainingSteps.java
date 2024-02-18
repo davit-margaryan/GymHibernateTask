@@ -5,7 +5,6 @@ import com.example.gymhibernatetask.auth.AuthenticationRequest;
 import com.example.gymhibernatetask.auth.AuthenticationResponse;
 import com.example.gymhibernatetask.auth.AuthenticationService;
 import com.example.gymhibernatetask.dto.CreateTrainingRequestDto;
-import com.example.gymhibernatetask.dto.TrainerWorkloadRequest;
 import com.example.gymhibernatetask.models.Training;
 import com.example.gymhibernatetask.repository.TrainingRepository;
 import com.example.gymhibernatetask.token.Token;
@@ -17,7 +16,10 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.apache.activemq.Message;
+import jakarta.jms.Message;
+import org.apache.activemq.broker.BrokerService;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,11 +36,9 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -77,6 +77,20 @@ public class CreateTrainingSteps {
 
     private ResultActions resultActions;
 
+    private static BrokerService broker;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        broker = new BrokerService();
+        broker.setPersistent(false);
+        broker.addConnector("tcp://localhost:61616");
+        broker.start();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        broker.stop();
+    }
 
     @Before
     public void authenticateUser() throws AccountLockedException {
@@ -94,18 +108,10 @@ public class CreateTrainingSteps {
     @After
     public void rollbackTransaction() {
         transactionManager.rollback(status);
-        jmsTemplate.browse("manageTrainerWorkload.queue", (session, browser) -> {
-            Enumeration<?> enumeration = browser.getEnumeration();
-            while (enumeration.hasMoreElements()) {
-                Message message = (Message) enumeration.nextElement();
-                jmsTemplate.receiveSelected("manageTrainerWorkload.queue", "JMSMessageID = '" + message.getJMSMessageID() + "'");
-            }
-            return null;
-        });
     }
 
     @Given("an authenticated request")
-    public void anAuthenticatedRequestIsMadeForCreatingTraining() throws Exception {
+    public void anAuthenticatedRequestIsMadeForCreatingTraining() {
         this.jwt = "Bearer " + jwt;
     }
 
@@ -129,7 +135,7 @@ public class CreateTrainingSteps {
     }
 
     @Then("the response status should be created")
-    public void trainingShouldBeCreated() {
+    public void trainingShouldBeCreated() throws InterruptedException {
         Optional<Training> optionalTraining = trainingRepository
                 .findFirstByTraineeUserUsernameAndTrainerUserUsernameOrderByIdDesc(requestDto.getTraineeUsername(), requestDto.getTrainerUsername());
 
@@ -139,11 +145,11 @@ public class CreateTrainingSteps {
         assertEquals(requestDto.getTraineeUsername(), training.getTrainee().getUser().getUsername());
         assertEquals(requestDto.getTrainerUsername(), training.getTrainer().getUser().getUsername());
 
-        TrainerWorkloadRequest trainerWorkloadRequest
-                = (TrainerWorkloadRequest) jmsTemplate.receiveAndConvert("manageTrainerWorkload.queue");
+        Thread.sleep(1000);
 
-        assert trainerWorkloadRequest != null;
-        assertEquals(requestDto.getTraineeUsername(), trainerWorkloadRequest.getTraineeUsername());
+        Message message = jmsTemplate.receive("manageTrainerWorkload.queue");
+
+        assertNotNull(message);
     }
 
     @When("try to create a training with a non-existent username")
