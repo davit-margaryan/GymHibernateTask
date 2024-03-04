@@ -236,6 +236,7 @@
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>main_microservice</finalName>
     </build>
 
 </project>

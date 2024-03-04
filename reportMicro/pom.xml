@@ -126,6 +126,7 @@
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>report_microservice</finalName>
     </build>
 
 </project>

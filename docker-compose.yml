@@ -1,0 +1,57 @@
+version: "3"
+
+services:
+  report-micro:
+    build:
+      context: ./reportMicro
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
+      - SPRING_ACTIVEMQ_BROKER_URL=${SPRING_ACTIVEMQ_BROKER_URL}
+      - SPRING_H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS=${SPRING_H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS}
+    depends_on:
+      - mongodb
+      - activemq
+
+  main-micro:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_ACTIVEMQ_BROKER_URL=${SPRING_ACTIVEMQ_BROKER_URL}
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+
+  activemq:
+    image: rmohr/activemq:5.15.9
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+
+  mysql:
+    image: mysql:latest
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 10
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    ports:
+      - "3307:3307"
